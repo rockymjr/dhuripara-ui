@@ -186,14 +186,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/admin/vdf/contributions"
-        element={
-          <ProtectedRoute>
-            <VdfContributionManagement />
-          </ProtectedRoute>
-        }
-      />
+    
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,11 +1,11 @@
 // src/components/admin/vdf/VdfExpenseManagement.jsx
 import React, { useEffect, useState } from 'react';
-import { vdfService } from '../../../services/vdfService';
-import { formatCurrency } from '../../../utils/formatCurrency';
-import { formatDate } from '../../../utils/dateFormatter';
+import { vdfService } from "../../services/vdfService";
+import { formatCurrency } from '../../utils/formatCurrency';
+import { formatDate } from '../../utils/dateFormatter';
 import { Package, Plus, Edit, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import Loader from '../../common/Loader';
-import StyledTable from '../../common/StyledTable';
+import Loader from '../common/Loader';
+import StyledTable from '../common/StyledTable';
 import VdfExpenseForm from './VdfExpenseForm';
 
 const VdfExpenseManagement = () => {

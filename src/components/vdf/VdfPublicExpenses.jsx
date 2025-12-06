@@ -45,7 +45,7 @@ const VdfPublicExpenses = () => {
 
       {/* Mobile Card View */}
       <div className="block sm:hidden space-y-4">
-        {expenses.map((expense) => (
+        {expenses && expenses.map((expense) => (
           <div key={expense.id} className="bg-white rounded-lg shadow p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
@@ -84,12 +84,12 @@ const VdfPublicExpenses = () => {
           </>
         )}
       >
-        {expenses.length === 0 ? (
+        {expenses && expenses.length === 0 ? (
           <tr>
             <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No expenses found</td>
           </tr>
         ) : (
-          expenses.map((expense) => (
+          expenses && expenses.map((expense) => (
             <tr key={expense.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(expense.expenseDate)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
