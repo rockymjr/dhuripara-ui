@@ -24,10 +24,15 @@ const VdfMonthlyContribution = () => {
   const fetchMatrix = async () => {
     try {
       setLoading(true);
+      console.log('Fetching monthly matrix for year:', selectedYear);
       const data = await vdfService.getPublicMonthlyMatrix(selectedYear);
-      setMatrix(data);
+      console.log('Monthly matrix data:', data);
+      // Handle both array and object responses
+      const families = Array.isArray(data) ? data : (data?.families || []);
+      setMatrix({ families });
     } catch (error) {
       console.error('Error fetching contribution matrix:', error);
+      alert('Failed to load contribution data: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -43,8 +48,19 @@ const VdfMonthlyContribution = () => {
   };
 
   if (loading) return <Loader message="Loading contribution data..." />;
-  if (!matrix || !matrix.families) {
-    return <div className="text-center py-8 text-gray-500">No data available</div>;
+  
+  if (!matrix || !matrix.families || matrix.families.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-500 text-lg">No contribution data available</p>
+          <p className="text-gray-400 text-sm mt-2">
+            The backend endpoint /public/vdf/contributions/monthly-matrix may not be implemented yet.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -75,18 +91,16 @@ const VdfMonthlyContribution = () => {
       {/* Mobile View - Cards */}
       <div className="block lg:hidden space-y-4">
         {matrix.families.map((family) => (
-          <div key={family.familyId} className="bg-white rounded-lg shadow p-4">
+          <div key={family.familyConfigId} className="bg-white rounded-lg shadow p-4">
             <div className="mb-4">
               <h3 className="font-semibold text-gray-900">{family.familyHeadName}</h3>
-              <p className="text-sm text-gray-600">{family.memberName}</p>
+              <p className="text-sm text-gray-600">{family.memberPhone}</p>
             </div>
             
             {/* Month Status Grid */}
             <div className="grid grid-cols-4 gap-2 mb-4">
               {MONTHS.map((month, idx) => {
-                const monthKey = `month${idx + 1}`;
-                const monthData = family.months[monthKey];
-                const isPaid = monthData?.paid;
+                const isPaid = family.paidMonths?.[idx] === true;
                 
                 return (
                   <div
@@ -115,14 +129,14 @@ const VdfMonthlyContribution = () => {
                 <p className="font-semibold text-green-600">
                   {formatCurrency(family.totalPaid)}
                 </p>
-                <p className="text-xs text-gray-500">({family.paidMonths} months)</p>
+                <p className="text-xs text-gray-500">({family.totalPaidMonths} months)</p>
               </div>
               <div>
                 <p className="text-gray-600">Due:</p>
                 <p className="font-semibold text-red-600">
                   {formatCurrency(family.totalDue)}
                 </p>
-                <p className="text-xs text-gray-500">({family.pendingMonths} months)</p>
+                <p className="text-xs text-gray-500">({family.totalPendingMonths} months)</p>
               </div>
             </div>
           </div>
@@ -146,18 +160,16 @@ const VdfMonthlyContribution = () => {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {matrix.families.map((family) => (
-              <tr key={family.familyId} className="hover:bg-gray-50">
+              <tr key={family.familyConfigId} className="hover:bg-gray-50">
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div>
                     <p className="font-medium text-gray-900">{family.familyHeadName}</p>
-                    <p className="text-sm text-gray-500">{family.memberName}</p>
+                    <p className="text-sm text-gray-500">{family.memberPhone}</p>
                   </div>
                 </td>
                 
                 {MONTHS.map((month, idx) => {
-                  const monthKey = `month${idx + 1}`;
-                  const monthData = family.months[monthKey];
-                  const isPaid = monthData?.paid;
+                  const isPaid = family.paidMonths?.[idx] === true;
                   
                   return (
                     <td key={idx} className="px-2 py-3 text-center">
@@ -165,7 +177,7 @@ const VdfMonthlyContribution = () => {
                         <div className="flex flex-col items-center">
                           <CheckCircle size={20} className="text-green-600" />
                           <span className="text-xs text-gray-600 mt-1">
-                            {formatCurrency(monthData.amount)}
+                            {formatCurrency(family.monthlyAmount)}
                           </span>
                         </div>
                       ) : (
@@ -180,7 +192,7 @@ const VdfMonthlyContribution = () => {
                     {formatCurrency(family.totalPaid)}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {family.paidMonths} months
+                    {family.totalPaidMonths} months
                   </div>
                 </td>
                 
@@ -189,7 +201,7 @@ const VdfMonthlyContribution = () => {
                     {formatCurrency(family.totalDue)}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {family.pendingMonths} months
+                    {family.totalPendingMonths} months
                   </div>
                 </td>
               </tr>
