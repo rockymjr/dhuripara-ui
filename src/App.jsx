@@ -27,9 +27,9 @@ import LoanManagement from './components/admin/LoanManagement';
 import MemberStatement from './components/admin/MemberStatement';
 import YearlyReport from './components/admin/YearlyReport';
 
-// VDF Admin Pages (to be created)
-//import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
-//import VdfExpenseManagement from './components/admin/vdf/VdfExpenseManagement';
+// VDF Admin Pages
+import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
+import VdfExpenseManagement from './components/vdf/VdfExpenseManagement';
 //import VdfContributionManagement from './components/admin/vdf/VdfContributionManagement';
 
 // Member Pages
@@ -75,7 +75,7 @@ function App() {
 // AppRoutes Component
 function AppRoutes() {
   const { isOperator } = useMemberAuth() || {};
-  
+
   return (
     <Routes>
       {/* Public Routes */}
@@ -134,22 +134,22 @@ function AppRoutes() {
       />
 
       {/* Admin Routes - VDF */}
-      {/* <Route
+      <Route
         path="/admin/vdf/families"
         element={
           isOperator
             ? <VdfFamilyManagement readOnly={true} />
             : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>
         }
-      /> */}
-      {/* <Route
+      />
+      <Route
         path="/admin/vdf/expenses"
         element={
           <ProtectedRoute>
             <VdfExpenseManagement />
           </ProtectedRoute>
         }
-      /> */}
+      />
       {/* <Route
         path="/admin/vdf/contributions"
         element={
@@ -166,6 +166,32 @@ function AppRoutes() {
           <MemberProtectedRoute>
             <MemberDashboard />
           </MemberProtectedRoute>
+        }
+      />
+
+      {/* Admin Routes - VDF */}
+      <Route
+        path="/admin/vdf/families"
+        element={
+          isOperator
+            ? <VdfFamilyManagement readOnly={true} />
+            : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/vdf/expenses"
+        element={
+          <ProtectedRoute>
+            <VdfExpenseManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/vdf/contributions"
+        element={
+          <ProtectedRoute>
+            <VdfContributionManagement />
+          </ProtectedRoute>
         }
       />
 
