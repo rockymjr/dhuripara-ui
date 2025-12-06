@@ -108,4 +108,29 @@ export const vdfService = {
     const response = await api.get('/member/vdf/my-status');
     return response.data;
   },
+
+   createExpense: async (data) => {
+    const response = await api.post('/admin/vdf/expenses', data);
+    return response.data;
+  },
+
+  updateExpense: async (id, data) => {
+    const response = await api.put(`/admin/vdf/expenses/${id}`, data);
+    return response.data;
+  },
+
+  getAllExpenses: async (page = 0, size = 20) => {
+    const response = await api.get(`/admin/vdf/expenses?page=${page}&size=${size}`);
+    return response.data;
+  },
+
+  getExpensesByCategory: async (categoryId) => {
+    const response = await api.get(`/admin/vdf/expenses/category/${categoryId}`);
+    return response.data;
+  },
+
+  getExpenseCategories: async () => {
+    const response = await api.get('/admin/vdf/expense-categories');
+    return response.data;
+  }
 };
