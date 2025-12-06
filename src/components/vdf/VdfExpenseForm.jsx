@@ -10,10 +10,6 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
     categoryId: expense?.categoryId || '',
     amount: expense?.amount?.toString() || '',
     description: expense?.description || '',
-    vendorName: expense?.vendorName || '',
-    billNumber: expense?.billNumber || '',
-    paymentMethod: expense?.paymentMethod || '',
-    approvedBy: expense?.approvedBy || '',
     notes: expense?.notes || ''
   });
   const [loading, setLoading] = useState(false);
@@ -65,10 +61,6 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
         categoryId: formData.categoryId,
         amount: parseFloat(formData.amount),
         description: formData.description.trim(),
-        vendorName: formData.vendorName.trim() || null,
-        billNumber: formData.billNumber.trim() || null,
-        paymentMethod: formData.paymentMethod || null,
-        approvedBy: formData.approvedBy.trim() || null,
         notes: formData.notes.trim() || null
       };
       
@@ -167,70 +159,6 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
               className={`w-full px-3 py-2 border rounded-lg ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
             />
             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vendor Name <span className="text-gray-500 text-xs">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                name="vendorName"
-                value={formData.vendorName}
-                onChange={handleChange}
-                placeholder="Vendor name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bill Number <span className="text-gray-500 text-xs">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                name="billNumber"
-                value={formData.billNumber}
-                onChange={handleChange}
-                placeholder="Bill/Invoice number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Method <span className="text-gray-500 text-xs">(Optional)</span>
-              </label>
-              <select
-                name="paymentMethod"
-                value={formData.paymentMethod}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              >
-                <option value="">-- Select --</option>
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="UPI">UPI</option>
-                <option value="Cheque">Cheque</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Approved By <span className="text-gray-500 text-xs">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                name="approvedBy"
-                value={formData.approvedBy}
-                onChange={handleChange}
-                placeholder="Name of approver"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
           </div>
 
           <div>

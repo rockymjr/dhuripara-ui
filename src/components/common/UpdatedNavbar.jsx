@@ -76,7 +76,7 @@ const UpdatedNavbar = () => {
             <span className="text-xs text-white mt-1">Home</span>
           </Link>
 
-          <Link to="/vdf/expenses" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-orange-600 hover:bg-orange-700 transition px-1" title="VDF Expenses">
+          <Link to={isAdmin ? "/admin/vdf/expenses" : "/vdf/expenses"} className="flex flex-col items-center justify-center w-16 h-16 rounded bg-orange-600 hover:bg-orange-700 transition px-1" title="VDF Expenses">
             <Package size={22} />
             <span className="text-xs text-white mt-1">Expenses</span>
           </Link>
@@ -138,7 +138,7 @@ const UpdatedNavbar = () => {
             <span className="text-[11px] text-white mt-1">Home</span>
           </Link>
 
-          <Link to="/vdf/expenses" className="flex flex-col items-center justify-center min-w-13 h-12 rounded border border-white/30 bg-orange-600 hover:bg-orange-700 transition px-1" onClick={() => setMobileMenuOpen(false)}>
+          <Link to={isAdmin ? "/admin/vdf/expenses" : "/vdf/expenses"} className="flex flex-col items-center justify-center min-w-13 h-12 rounded border border-white/30 bg-orange-600 hover:bg-orange-700 transition px-1" onClick={() => setMobileMenuOpen(false)}>
             <Package size={18} />
             <span className="text-[11px] text-white mt-1">Expense</span>
           </Link>
