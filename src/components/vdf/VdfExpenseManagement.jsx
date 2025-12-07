@@ -137,82 +137,83 @@ const VdfExpenseManagement = () => {
         </div>
       </div>
 
-      {/* Summary Cards - Compact on mobile */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-6">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-2 md:p-4 text-white">
-          <h3 className="text-xs md:text-sm font-medium opacity-90">Total This Year</h3>
-          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{formatCurrency(totalExpenses)}</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-2 md:p-4 text-white">
-          <h3 className="text-xs md:text-sm font-medium opacity-90">Categories</h3>
-          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{categories.length}</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-2 md:p-4 text-white">
-          <h3 className="text-xs md:text-sm font-medium opacity-90">Entries</h3>
-          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{filteredExpenses.length}</p>
-        </div>
+      {/* Summary Cards - Total This Year in Table Format */}
+      <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-3 md:mb-6">
+        <table className="w-full">
+          <tbody>
+            <tr>
+              <td className="px-3 py-2 text-sm md:text-base font-medium text-gray-700">Total This Year:</td>
+              <td className="px-3 py-2 text-sm md:text-base font-bold text-orange-600 text-right">{formatCurrency(totalExpenses)}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      {/* Category Summary */}
+      {/* Category Summary - Table Format */}
       {expensesByCategory.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Expense by Category</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {expensesByCategory.map((item, idx) => (
-              <div key={idx} className="text-center">
-                <p className="text-sm text-gray-600">{item.name}</p>
-                <p className="text-lg font-semibold text-orange-600">{formatCurrency(item.total)}</p>
-              </div>
-            ))}
-          </div>
+        <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-3 md:mb-6 overflow-x-auto">
+          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3">Expense by Category</h3>
+          <table className="w-full text-xs md:text-sm">
+            <thead>
+              <tr className="border-b-2 border-orange-300">
+                <th className="text-left px-3 py-2 font-semibold text-gray-700">Category</th>
+                <th className="text-right px-3 py-2 font-semibold text-gray-700">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expensesByCategory.map((item, idx) => (
+                <tr key={idx} className="border-b border-gray-200 odd:bg-gray-50 hover:bg-gray-100">
+                  <td className="px-3 py-2 text-gray-800">{item.name}</td>
+                  <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(item.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4">
+      <div className="block lg:hidden space-y-3">
         {filteredExpenses.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+          <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500 text-sm">
             No expenses found for selected filters
           </div>
         ) : (
           filteredExpenses.map((expense) => (
-            <div key={expense.id} className="bg-white rounded-lg shadow p-4">
-              <div className="flex justify-between items-start mb-3">
+            <div key={expense.id} className="bg-white rounded-lg shadow p-3 group">
+              <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">{expense.description}</p>
-                  <p className="text-xs text-gray-500 mt-1">{formatDate(expense.expenseDate)}</p>
+                  <p className="font-semibold text-gray-900 text-xs md:text-sm">{expense.description}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{formatDate(expense.expenseDate)}</p>
                 </div>
-                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                <span className="px-1.5 py-0.5 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap ml-2">
                   {expense.categoryName}
                 </span>
               </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className="font-semibold text-orange-600">{formatCurrency(expense.amount)}</span>
-                </div>
-                {expense.notes && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Notes:</span>
-                    <span>{expense.notes}</span>
-                  </div>
-                )}
+              <div className="flex justify-between items-center text-xs md:text-sm mb-2">
+                <span className="text-gray-600">Amount:</span>
+                <span className="font-semibold text-orange-600">{formatCurrency(expense.amount)}</span>
               </div>
+              {expense.notes && (
+                <div className="text-xs text-gray-500 italic mb-2 group-hover:text-gray-700 transition">
+                  📝 {expense.notes}
+                </div>
+              )}
               {isAdmin && (
-                <div className="mt-3 flex gap-2">
+                <div className="mt-2 flex gap-1">
                   <button
                     onClick={() => handleEdit(expense)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg flex items-center justify-center space-x-1 transition text-sm"
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded-lg flex items-center justify-center transition text-xs"
+                    title="Edit"
                   >
-                    <Edit size={16} />
-                    <span>Edit</span>
+                    <Edit size={14} />
                   </button>
                   <button
                     onClick={() => handleDelete(expense.id)}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg flex items-center justify-center space-x-1 transition text-sm"
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 rounded-lg flex items-center justify-center transition text-xs"
+                    title="Delete"
                   >
-                    <Trash2 size={16} />
-                    <span>Delete</span>
+                    <Trash2 size={14} />
                   </button>
                 </div>
               )}
@@ -226,51 +227,58 @@ const VdfExpenseManagement = () => {
         <StyledTable
           renderHeader={() => (
             <>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Date</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Category</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Description</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Date</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Category</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Description</th>
+              <th className="px-4 py-3 text-right text-sm font-semibold text-white uppercase tracking-wide">Amount</th>
+              <th className="px-4 py-3 text-center text-sm font-semibold text-white uppercase tracking-wide">Actions</th>
             </>
           )}
         >
           {filteredExpenses.length === 0 ? (
             <tr>
-              <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No expenses found for selected filters</td>
+              <td colSpan="5" className="px-4 py-4 text-center text-gray-500">No expenses found for selected filters</td>
             </tr>
           ) : (
             filteredExpenses.map((expense) => (
-              <tr key={expense.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <tr key={expense.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100 group">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                   {formatDate(expense.expenseDate)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                  <span className="px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800">
                     {expense.categoryName}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {expense.description}
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  <div className="max-w-xs">
+                    <p>{expense.description}</p>
+                    {expense.notes && (
+                      <p className="text-xs text-gray-500 italic mt-1 group-hover:text-gray-700 transition">
+                        📝 {expense.notes}
+                      </p>
+                    )}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-orange-600 text-right">
                   {formatCurrency(expense.amount)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-3 whitespace-nowrap text-center">
                   {isAdmin ? (
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center space-x-2">
                       <button
                         onClick={() => handleEdit(expense)}
-                        className="text-indigo-600 hover:text-indigo-800"
+                        className="p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded transition"
                         title="Edit expense"
                       >
-                        <Edit size={18} />
+                        <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(expense.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition"
                         title="Delete expense"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   ) : (
