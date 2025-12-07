@@ -74,7 +74,16 @@ const VdfExpenseManagement = () => {
   };
 
   const handleDelete = async (expenseId) => {
-    alert('Delete functionality will be available soon. Please contact admin to remove expenses.');
+    if (window.confirm('Are you sure you want to delete this expense?')) {
+      try {
+        await vdfService.deleteExpense(expenseId);
+        fetchExpenses();
+        alert('Expense deleted successfully');
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+        alert('Failed to delete expense');
+      }
+    }
   };
 
   // Calculate summary
@@ -200,9 +209,7 @@ const VdfExpenseManagement = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(expense.id)}
-                    className="flex-1 bg-gray-400 cursor-not-allowed text-white py-2 rounded-lg flex items-center justify-center space-x-1 text-sm"
-                    title="Delete coming soon"
-                    disabled
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg flex items-center justify-center space-x-1 transition text-sm"
                   >
                     <Trash2 size={16} />
                     <span>Delete</span>
@@ -260,9 +267,8 @@ const VdfExpenseManagement = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(expense.id)}
-                        className="text-gray-400 cursor-not-allowed"
-                        title="Delete coming soon"
-                        disabled
+                        className="text-red-600 hover:text-red-800"
+                        title="Delete expense"
                       >
                         <Trash2 size={18} />
                       </button>
