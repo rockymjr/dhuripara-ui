@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { vdfService } from '../../services/vdfService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import Loader from '../common/Loader';
-import { Calendar, CheckCircle, XCircle } from 'lucide-react';
+import VdfContributionForm from './VdfContributionForm';
+import { Calendar, CheckCircle, XCircle, Plus } from 'lucide-react';
 
 const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -13,13 +15,33 @@ const MONTHS = [
 
 const VdfMonthlyContribution = () => {
   const { t } = useLanguage();
+  const { isAuthenticated: isAdmin } = useAuth();
   const [matrix, setMatrix] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [showForm, setShowForm] = useState(false);
+  const [editingFamily, setEditingFamily] = useState(null);
 
   useEffect(() => {
     fetchMatrix();
   }, [selectedYear]);
+
+  const handleFormClose = (shouldRefresh) => {
+    setShowForm(false);
+    setEditingFamily(null);
+    if (shouldRefresh) {
+      fetchMatrix();
+    }
+  };
+
+  const handleEditFamily = (family) => {
+    if (!isAdmin) {
+      alert('Only admins can edit contributions');
+      return;
+    }
+    setEditingFamily({ ...family, year: selectedYear });
+    setShowForm(true);
+  };
 
   const fetchMatrix = async () => {
     try {
@@ -65,7 +87,7 @@ const VdfMonthlyContribution = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div className="flex items-center">
           <Calendar size={32} className="text-teal-600 mr-3" />
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -77,16 +99,19 @@ const VdfMonthlyContribution = () => {
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Year:</label>
           <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-          >
-            {generateYearOptions().map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+        >
+          {generateYearOptions().map(year => (
+            <option key={year} value={year}>{year}</option>
+          ))}
+        </select>
         </div>
       </div>
+
+      {/* Contribution Form Modal */}
+      {showForm && <VdfContributionForm family={editingFamily} year={selectedYear} onClose={handleFormClose} />}
 
       {/* Mobile View - Cards */}
       <div className="block lg:hidden space-y-4">
@@ -122,6 +147,16 @@ const VdfMonthlyContribution = () => {
               })}
             </div>
             
+            {/* Edit Button for Mobile */}
+            {isAdmin && (
+              <button
+                onClick={() => handleEditFamily(family)}
+                className="w-full mt-4 px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-sm"
+              >
+                Edit Contributions
+              </button>
+            )}
+            
             {/* Summary */}
             <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t">
               <div>
@@ -156,6 +191,7 @@ const VdfMonthlyContribution = () => {
               ))}
               <th className="px-4 py-3 text-center text-sm font-semibold uppercase">Paid</th>
               <th className="px-4 py-3 text-center text-sm font-semibold uppercase">Due</th>
+              {isAdmin && <th className="px-4 py-3 text-center text-sm font-semibold uppercase">Action</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -204,6 +240,18 @@ const VdfMonthlyContribution = () => {
                     {family.totalPendingMonths} months
                   </div>
                 </td>
+                
+                {/* Edit Button for Desktop */}
+                {isAdmin && (
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => handleEditFamily(family)}
+                      className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 transition text-sm font-medium"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

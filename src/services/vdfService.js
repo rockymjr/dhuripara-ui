@@ -26,6 +26,11 @@ export const vdfService = {
     return response.data;
   },
 
+  recordBulkContributions: async (data) => {
+    const response = await api.post('/admin/vdf/contributions/bulk', data);
+    return response.data;
+  },
+
   getFamilyContributions: async (familyConfigId, year) => {
     const response = await api.get(
       `/admin/vdf/contributions/family/${familyConfigId}?year=${year || new Date().getFullYear()}`
@@ -119,6 +124,11 @@ export const vdfService = {
     return response.data;
   },
 
+  deleteExpense: async (id) => {
+    const response = await api.delete(`/admin/vdf/expenses/${id}`);
+    return response.data;
+  },
+
   getAllExpenses: async (page = 0, size = 20) => {
     const response = await api.get(`/admin/vdf/expenses?page=${page}&size=${size}`);
     return response.data;
@@ -131,6 +141,30 @@ export const vdfService = {
 
   getExpenseCategories: async () => {
     const response = await api.get('/admin/vdf/expense-categories');
+    return response.data;
+  },
+
+  // ==================== DEPOSITS ====================
+
+  getPublicDeposits: async (year) => {
+    const response = await api.get(
+      `/public/vdf/deposits?year=${year || new Date().getFullYear()}`
+    );
+    return response.data;
+  },
+
+  createDeposit: async (data) => {
+    const response = await api.post('/admin/vdf/deposits', data);
+    return response.data;
+  },
+
+  updateDeposit: async (id, data) => {
+    const response = await api.put(`/admin/vdf/deposits/${id}`, data);
+    return response.data;
+  },
+
+  getDepositCategories: async () => {
+    const response = await api.get('/public/vdf/deposit-categories');
     return response.data;
   }
 };

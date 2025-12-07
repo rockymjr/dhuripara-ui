@@ -18,7 +18,9 @@ import LoanList from './components/public/LoanList';
 
 // VDF Public Pages
 import VdfPublicExpenses from './components/vdf/VdfPublicExpenses';
+import VdfPublicDeposits from './components/vdf/VdfPublicDeposits';
 import VdfMonthlyContribution from './components/vdf/VdfMonthlyContribution';
+import VdfLanding from './components/vdf/VdfLanding';
 
 // Admin Pages
 import MemberManagement from './components/admin/MemberManagement';
@@ -34,6 +36,7 @@ import VdfExpenseManagement from './components/vdf/VdfExpenseManagement';
 
 // Member Pages
 import MemberDashboard from './components/member/MemberDashboard';
+import GraminBank from './components/admin/GraminBank';
 
 // Analytics Tracker Component
 // function AnalyticsTracker() {
@@ -74,7 +77,15 @@ function App() {
 
 // AppRoutes Component
 function AppRoutes() {
-  const { isOperator } = useMemberAuth() || {};
+  let isOperator = false;
+  try {
+    const memberCtx = useMemberAuth();
+    isOperator = !!memberCtx?.isOperator;
+  } catch (err) {
+    // If hook is used outside provider or any other error occurs, log and continue with defaults
+    console.error('useMemberAuth threw in AppRoutes, defaulting isOperator=false', err);
+    isOperator = false;
+  }
 
   return (
     <Routes>
@@ -84,13 +95,23 @@ function AppRoutes() {
       <Route path="/loans" element={<LoanList />} />
 
       {/* VDF Public Routes */}
+      <Route path="/vdf" element={<VdfLanding />} />
       <Route path="/vdf/expenses" element={<VdfPublicExpenses />} />
+      <Route path="/vdf/deposits" element={<VdfPublicDeposits />} />
       <Route path="/vdf/contributions" element={<VdfMonthlyContribution />} />
 
       {/* Unified Login Route */}
       <Route path="/login" element={<UnifiedLogin />} />
 
       {/* Admin Routes - Banking */}
+      <Route
+        path="/admin/gramin-bank"
+        element={
+          isOperator
+            ? <GraminBank />
+            : <ProtectedRoute><GraminBank /></ProtectedRoute>
+        }
+      />
       <Route path="/admin/dashboard" element={<Navigate to="/admin/members" replace />} />
       <Route
         path="/admin/members"

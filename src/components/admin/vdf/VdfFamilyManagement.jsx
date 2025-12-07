@@ -63,25 +63,25 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
   if (loading) return <Loader message="Loading families..." />;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <Users size={32} className="text-cyan-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-800">VDF Family Management</h2>
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-3 md:mb-6 gap-2">
+        <div className="flex items-center gap-2">
+          <Users size={24} className="text-cyan-600" />
+          <h2 className="text-lg md:text-xl font-bold text-gray-800">Families</h2>
         </div>
         {!readOnly && (
           <button
             onClick={handleAddNew}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-lg flex items-center space-x-1 transition text-sm md:text-base"
           >
-            <Plus size={20} />
-            <span>Add Family</span>
+            <Plus size={16} />
+            <span className="hidden sm:inline">Add</span>
           </button>
         )}
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="bg-white rounded-lg shadow p-2 md:p-4 mb-3 md:mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
           {/* Filter Buttons */}
           <div className="flex space-x-2">
@@ -121,29 +121,29 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Families</h3>
-          <p className="text-3xl font-bold mt-2">{families.length}</p>
+      {/* Summary Cards - Compact on mobile */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-6">
+        <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Total</h3>
+          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{families.length}</p>
         </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Active Contributors</h3>
-          <p className="text-3xl font-bold mt-2">
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Active</h3>
+          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">
             {families.filter(f => f.isContributionEnabled).length}
           </p>
         </div>
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Collected (This Year)</h3>
-          <p className="text-2xl font-bold mt-2">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Collected</h3>
+          <p className="text-lg md:text-2xl font-bold mt-1 md:mt-2">
             {formatCurrency(
               families.reduce((sum, f) => sum + (f.totalAmountPaid || 0), 0)
             )}
           </p>
         </div>
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Dues (This Year)</h3>
-          <p className="text-2xl font-bold mt-2">
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Dues</h3>
+          <p className="text-lg md:text-2xl font-bold mt-1 md:mt-2">
             {formatCurrency(
               families.reduce((sum, f) => sum + (f.totalAmountDue || 0), 0)
             )}
@@ -151,62 +151,64 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
         </div>
       </div>
 
-      {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4">
-        {filteredFamilies.map((family) => (
-          <div key={family.id} className="bg-white rounded-lg shadow p-4">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{family.familyHeadName}</h3>
-                <p className="text-sm text-gray-600">{family.memberName}</p>
-              </div>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                family.isContributionEnabled
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
-                {family.isContributionEnabled ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Monthly Amount:</span>
-                <span className="font-medium">{formatCurrency(family.monthlyAmount)}</span>
-              </div>
-              {family.isContributionEnabled && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Paid Months:</span>
-                    <span className="font-medium text-green-600">{family.totalPaidMonths}/12</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Paid:</span>
-                    <span className="font-medium text-green-600">
-                      {formatCurrency(family.totalAmountPaid)}
+      {/* Mobile/Tablet Compact Table View */}
+      <div className="lg:hidden overflow-x-auto">
+        <table className="w-full text-xs md:text-sm border-collapse">
+          <thead>
+            <tr className="bg-cyan-600 text-white">
+              <th className="px-2 md:px-3 py-2 text-left text-xs font-semibold border border-cyan-500">Family Head</th>
+              <th className="px-2 md:px-3 py-2 text-left text-xs font-semibold border border-cyan-500">Month Amt</th>
+              <th className="px-2 md:px-3 py-2 text-center text-xs font-semibold border border-cyan-500">Status</th>
+              <th className="px-2 md:px-3 py-2 text-right text-xs font-semibold border border-cyan-500">Paid</th>
+              <th className="px-2 md:px-3 py-2 text-right text-xs font-semibold border border-cyan-500">Due</th>
+              {!readOnly && <th className="px-2 md:px-3 py-2 text-center text-xs font-semibold border border-cyan-500">Act</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredFamilies.length === 0 ? (
+              <tr>
+                <td colSpan={!readOnly ? 6 : 5} className="px-2 md:px-3 py-2 text-center text-gray-500 text-xs border border-gray-200">No families found</td>
+              </tr>
+            ) : (
+              filteredFamilies.map((family) => (
+                <tr key={family.id} className="odd:bg-white even:bg-gray-50 border-b border-gray-200">
+                  <td className="px-2 md:px-3 py-2 text-xs font-medium text-gray-900 border border-gray-200">
+                    {family.familyHeadName}
+                  </td>
+                  <td className="px-2 md:px-3 py-2 text-xs border border-gray-200">
+                    {formatCurrency(family.monthlyAmount)}
+                  </td>
+                  <td className="px-2 md:px-3 py-2 text-center border border-gray-200">
+                    <span className={`inline-block px-1.5 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+                      family.isContributionEnabled
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {family.isContributionEnabled ? 'Active' : 'Inactive'}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Due:</span>
-                    <span className="font-medium text-red-600">
-                      {formatCurrency(family.totalAmountDue)}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {!readOnly && (
-              <button
-                onClick={() => handleEdit(family)}
-                className="mt-3 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-lg flex items-center justify-center space-x-2 transition"
-              >
-                <Edit size={16} />
-                <span>Edit</span>
-              </button>
+                  </td>
+                  <td className="px-2 md:px-3 py-2 text-xs font-semibold text-green-600 border border-gray-200 text-right">
+                    {formatCurrency(family.totalAmountPaid || 0)}
+                  </td>
+                  <td className="px-2 md:px-3 py-2 text-xs font-semibold text-red-600 border border-gray-200 text-right">
+                    {formatCurrency(family.totalAmountDue || 0)}
+                  </td>
+                  {!readOnly && (
+                    <td className="px-2 md:px-3 py-2 text-center border border-gray-200">
+                      <button
+                        onClick={() => handleEdit(family)}
+                        className="text-cyan-600 hover:text-cyan-900 font-semibold"
+                        title="Edit"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))
             )}
-          </div>
-        ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Desktop Table View */}

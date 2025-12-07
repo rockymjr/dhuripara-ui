@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { vdfService } from "../../services/vdfService";
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
-import { Package, Plus, Edit, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import Loader from '../common/Loader';
 import StyledTable from '../common/StyledTable';
 import VdfExpenseForm from './VdfExpenseForm';
@@ -18,7 +18,6 @@ const VdfExpenseManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const { isAuthenticated: isAdmin } = useAuth();
 
@@ -69,12 +68,20 @@ const VdfExpenseManagement = () => {
     setShowForm(true);
   };
 
+  const handleEdit = (expense) => {
+    setEditingExpense(expense);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (expenseId) => {
+    alert('Delete functionality will be available soon. Please contact admin to remove expenses.');
+  };
+
   // Calculate summary
   const filteredExpenses = (expenses || []).filter(exp => {
     const expDate = new Date(exp.expenseDate);
     const yearMatch = expDate.getFullYear() === selectedYear;
-    const monthMatch = selectedMonth === 0 || expDate.getMonth() === selectedMonth - 1;
-    return yearMatch && monthMatch;
+    return yearMatch;
   });
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
@@ -89,80 +96,51 @@ const VdfExpenseManagement = () => {
   if (loading) return <Loader message="Loading expenses..." />;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <Package size={32} className="text-orange-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-800">VDF Expense Management</h2>
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-3 md:mb-6 gap-2">
+        <div className="flex items-center gap-2">
+          <Package size={24} className="text-orange-600" />
+          <h2 className="text-lg md:text-xl font-bold text-gray-800">Expenses</h2>
         </div>
-        {isAdmin && (
-          <button
-            onClick={handleAddNew}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
-          >
-            <Plus size={20} />
-            <span>Add Expense</span>
-          </button>
-        )}
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Expenses (This Page)</h3>
-          <p className="text-3xl font-bold mt-2">{formatCurrency(totalExpenses)}</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Categories</h3>
-          <p className="text-3xl font-bold mt-2">{categories.length}</p>
-        </div>
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">
-            {selectedMonth === 0 ? 'Selected Year' : 'Selected Month'}
-          </h3>
-          <p className="text-3xl font-bold mt-2">{formatCurrency(totalExpenses)}</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total This Year</h3>
-          <p className="text-2xl font-bold mt-2">
-            {formatCurrency(
-              (expenses || [])
-                .filter(exp => new Date(exp.expenseDate).getFullYear() === selectedYear)
-                .reduce((sum, exp) => sum + exp.amount, 0)
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Year and Month Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-          <Filter size={20} className="text-gray-600 hidden md:block flex-shrink-0" />
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+        <div className="flex items-center gap-2">
+          {/* Year Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">Year:</label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="px-2 md:px-3 py-1 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               {[2024, 2025, 2026].map(year => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
           </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="w-full md:w-32 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          {isAdmin && (
+            <button
+              onClick={handleAddNew}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-lg flex items-center space-x-1 transition text-sm md:text-base"
             >
-              <option value={0}>All Months</option>
-              {Array.from({length: 12}, (_, i) => (
-                <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('default', {month: 'long'})}</option>
-              ))}
-            </select>
-          </div>
+              <Plus size={16} />
+              <span className="hidden sm:inline">Add</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Summary Cards - Compact on mobile */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 mb-3 md:mb-6">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Total This Year</h3>
+          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{formatCurrency(totalExpenses)}</p>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Categories</h3>
+          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{categories.length}</p>
+        </div>
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-2 md:p-4 text-white">
+          <h3 className="text-xs md:text-sm font-medium opacity-90">Entries</h3>
+          <p className="text-lg md:text-3xl font-bold mt-1 md:mt-2">{filteredExpenses.length}</p>
         </div>
       </div>
 
@@ -211,6 +189,26 @@ const VdfExpenseManagement = () => {
                   </div>
                 )}
               </div>
+              {isAdmin && (
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(expense)}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg flex items-center justify-center space-x-1 transition text-sm"
+                  >
+                    <Edit size={16} />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(expense.id)}
+                    className="flex-1 bg-gray-400 cursor-not-allowed text-white py-2 rounded-lg flex items-center justify-center space-x-1 text-sm"
+                    title="Delete coming soon"
+                    disabled
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -252,14 +250,23 @@ const VdfExpenseManagement = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {isAdmin ? (
-                    <button
-                      onClick={() => { setEditingExpense(expense); setShowForm(true); }}
-                      className="text-indigo-600 hover:text-indigo-800 flex items-center space-x-2"
-                      title="Edit expense"
-                    >
-                      <Edit size={16} />
-                      <span className="text-sm">Edit</span>
-                    </button>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleEdit(expense)}
+                        className="text-indigo-600 hover:text-indigo-800"
+                        title="Edit expense"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(expense.id)}
+                        className="text-gray-400 cursor-not-allowed"
+                        title="Delete coming soon"
+                        disabled
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   ) : (
                     '-'
                   )}
