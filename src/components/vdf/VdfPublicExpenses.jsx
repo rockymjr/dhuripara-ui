@@ -5,34 +5,32 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { useLanguage } from '../../context/LanguageContext';
 import Loader from '../common/Loader';
-import StyledTable from '../common/StyledTable';
 import VdfExpenseForm from './VdfExpenseForm';
-import { ChevronLeft, ChevronRight, Package, Plus } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const VdfPublicExpenses = () => {
   const { t } = useLanguage();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const { isAuthenticated: isAdmin } = useAuth();
-  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedNotes, setSelectedNotes] = useState(null);
 
   useEffect(() => {
     fetchExpenses();
-  }, [page]);
+    fetchCategories();
+  }, [selectedYear]);
 
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const data = await vdfService.getPublicExpenses(page, 20);
-      setExpenses(data.content);
-      setTotalPages(data.totalPages);
+      const data = await vdfService.getPublicExpenses(0, 100);
+      // Handle both paginated and direct array responses
+      setExpenses(Array.isArray(data) ? data : (data.content || []));
     } catch (error) {
       console.error('Error fetching VDF expenses:', error);
     } finally {
@@ -40,35 +38,80 @@ const VdfPublicExpenses = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await vdfService.getExpenseCategories();
-        setCategories(data || []);
-      } catch (err) {
-        console.error('Failed to load categories:', err);
-      }
-    };
+  const fetchCategories = async () => {
+    try {
+      const data = await vdfService.getPublicExpenseCategories();
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
 
-    fetchCategories();
-  }, []);
+  const handleFormClose = (shouldRefresh) => {
+    setShowForm(false);
+    setEditingExpense(null);
+    if (shouldRefresh) fetchExpenses();
+  };
+
+  const handleEdit = (expense) => {
+    setEditingExpense(expense);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (expenseId) => {
+    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+    try {
+      await vdfService.deleteExpense(expenseId);
+      alert('Expense deleted successfully');
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      alert('Failed to delete expense');
+    }
+  };
+
+  const handleAddNew = () => {
+    setEditingExpense(null);
+    setShowForm(true);
+  };
 
   if (loading) return <Loader message="Loading VDF expenses..." />;
 
+  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  // Calculate expenses by category
+  const expensesByCategory = {};
+  expenses.forEach(e => {
+    if (!expensesByCategory[e.categoryName]) {
+      expensesByCategory[e.categoryName] = 0;
+    }
+    expensesByCategory[e.categoryName] += e.amount;
+  });
+
+  const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-3 md:mb-6 gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <Package size={24} className="text-orange-600" />
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">
-            Expenses
-          </h2>
+          <Package size={20} className="text-orange-600" />
+          <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+          >
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
           {isAdmin && (
             <button
-              onClick={() => { setEditingExpense(null); setShowForm(true); }}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-2 md:px-3 py-1 md:py-2 rounded-lg flex items-center space-x-1 transition text-sm md:text-base"
+              onClick={handleAddNew}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg flex items-center space-x-1 transition text-sm"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Add</span>
@@ -77,111 +120,140 @@ const VdfPublicExpenses = () => {
         </div>
       </div>
 
-      {/* Mobile/Tablet Compact Table View */}
-      <div className="sm:hidden overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-orange-600 text-white">
-              <th className="px-3 py-2 text-left text-xs font-semibold border border-orange-500">Date</th>
-              <th className="px-3 py-2 text-left text-xs font-semibold border border-orange-500">Category</th>
-              <th className="px-3 py-2 text-right text-xs font-semibold border border-orange-500">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses && expenses.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="px-3 py-3 text-center text-gray-500 text-xs border border-gray-200">No expenses found</td>
-              </tr>
-            ) : (
-              expenses && expenses.map((expense) => (
-                <tr key={expense.id} className="odd:bg-white even:bg-gray-50 border-b border-gray-200">
-                  <td className="px-3 py-2 text-xs text-gray-700 border border-gray-200">
-                    {formatDate(expense.expenseDate)}
-                  </td>
-                  <td className="px-3 py-2 text-xs border border-gray-200">
-                    <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
-                      {expense.categoryName}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 text-xs font-semibold text-orange-600 border border-gray-200 text-right">
-                    {formatCurrency(expense.amount)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Desktop Table View */}
-      <div className="hidden sm:block">
-        <StyledTable
-          renderHeader={() => (
-            <>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Date</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Category</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Description</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount</th>
-            </>
-          )}
-        >
-          {expenses && expenses.length === 0 ? (
-            <tr>
-              <td colSpan="4" className="px-6 py-4 text-center text-gray-500">No expenses found</td>
-            </tr>
-          ) : (
-            expenses && expenses.map((expense) => (
-              <tr key={expense.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(expense.expenseDate)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                    {expense.categoryName}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">{expense.description}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">
-                  {formatCurrency(expense.amount)}
-                </td>
-              </tr>
-            ))
-          )}
-        </StyledTable>
-      </div>
-
-      {/* Pagination */}
-      <div className="mt-3 md:mt-6 flex items-center justify-between text-xs md:text-sm">
-        <p className="text-gray-700">
-          Page <span className="font-medium">{page + 1}</span> of{' '}
-          <span className="font-medium">{totalPages}</span>
-        </p>
-        <div className="flex space-x-1 md:space-x-2">
-          <button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
-            className="p-1 md:p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages - 1}
-            className="p-1 md:p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronRight size={18} />
-          </button>
+      {/* Summary Card */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-3 mb-4 text-white">
+        <div className="flex justify-between items-center">
+          <span className="text-sm opacity-90">Total Expenses {selectedYear}</span>
+          <span className="text-xl font-bold">{formatCurrency(totalExpenses)}</span>
         </div>
       </div>
 
-      {/* Expense Form Modal (admin only) */}
-      {showForm && isAdmin && (
+      {/* Expenses by Category */}
+      {Object.keys(expensesByCategory).length > 0 && (
+        <div className="bg-white rounded-lg shadow mb-4 overflow-hidden">
+          <div className="px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-semibold">
+            By Category
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-3 py-2 text-left font-semibold text-gray-700">Category</th>
+                  <th className="px-3 py-2 text-right font-semibold text-gray-700">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {Object.entries(expensesByCategory).map(([category, amount]) => (
+                  <tr key={category} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 font-medium text-gray-900">{category}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Main Expenses Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Date</th>
+                <th className="px-3 py-2 text-left font-semibold">Category</th>
+                <th className="px-3 py-2 text-left font-semibold">Description</th>
+                <th className="px-3 py-2 text-right font-semibold">Amount</th>
+                <th className="px-3 py-2 text-center font-semibold">Notes</th>
+                {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {expenses.length === 0 ? (
+                <tr>
+                  <td colSpan={isAdmin ? 6 : 5} className="px-3 py-3 text-center text-gray-500">
+                    No expenses found
+                  </td>
+                </tr>
+              ) : (
+                expenses.map((expense) => (
+                  <tr key={expense.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
+                    <td className="px-3 py-2">
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
+                        {expense.categoryName}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
+                      {expense.description || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
+                      {formatCurrency(expense.amount)}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      {expense.notes ? (
+                        <button
+                          onClick={() => setSelectedNotes(expense.notes)}
+                          className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition"
+                          title="View notes"
+                        >
+                          <Info size={16} />
+                        </button>
+                      ) : (
+                        <span className="text-gray-300">-</span>
+                      )}
+                    </td>
+                    {isAdmin && (
+                      <td className="px-3 py-2 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleEdit(expense)}
+                            className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(expense.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Notes Modal */}
+      {selectedNotes && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Notes</h3>
+            <p className="text-gray-700 mb-6 whitespace-pre-wrap break-words">{selectedNotes}</p>
+            <button
+              onClick={() => setSelectedNotes(null)}
+              className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Expense Form Modal */}
+      {showForm && (
         <VdfExpenseForm
           expense={editingExpense}
           categories={categories}
-          onClose={(shouldRefresh) => {
-            setShowForm(false);
-            setEditingExpense(null);
-            if (shouldRefresh) fetchExpenses();
-          }}
+          onClose={handleFormClose}
         />
       )}
     </div>

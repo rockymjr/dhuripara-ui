@@ -166,5 +166,20 @@ export const vdfService = {
   getDepositCategories: async () => {
     const response = await api.get('/public/vdf/deposit-categories');
     return response.data;
+  },
+
+  getPublicExpenseCategories: async () => {
+    const response = await api.get('/public/vdf/expense-categories');
+    return response.data;
+  },
+
+  deleteDeposit: async (id) => {
+    const response = await api.delete(`/admin/vdf/deposits/${id}`);
+    return response.data;
+  },
+
+  getPublicFamilies: async (activeOnly = false) => {
+    const response = await api.get(`/public/vdf/families?activeOnly=${activeOnly}`);
+    return response.data;
   }
 };

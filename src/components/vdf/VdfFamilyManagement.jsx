@@ -23,7 +23,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
   const fetchFamilies = async () => {
     try {
       setLoading(true);
-      const data = await vdfService.getAllFamilies(filterActive === 'active');
+      const data = await vdfService.getPublicFamilies(filterActive === 'active');
       setFamilies(data);
     } catch (error) {
       console.error('Error fetching families:', error);

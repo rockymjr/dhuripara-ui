@@ -115,7 +115,7 @@ const DepositManagement = ({ readOnly }) => {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
               >
-                {t('active') || 'Active'}
+                {t('active') || 'Active'}            
               </button>
               <button
                 onClick={() => {
