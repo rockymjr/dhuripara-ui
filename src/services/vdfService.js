@@ -52,6 +52,16 @@ export const vdfService = {
     return response.data;
   },
 
+  updateExpense: async (id, data) => {
+    const response = await api.put(`/admin/vdf/expenses/${id}`, data);
+    return response.data;
+  },
+
+  deleteExpense: async (id) => {
+    const response = await api.delete(`/admin/vdf/expenses/${id}`);
+    return response.data;
+  },
+
   getAllExpenses: async (page = 0, size = 20) => {
     const response = await api.get(`/admin/vdf/expenses?page=${page}&size=${size}`);
     return response.data;
@@ -100,6 +110,19 @@ export const vdfService = {
     return response.data;
   },
 
+  // ==================== Exemptions ====================
+
+  createFamilyExemption: async (data) => {
+    const response = await api.post('/admin/vdf/family-exemptions', data);
+    return response.data;
+  },
+
+  deleteFamilyExemption: async (familyId, monthYear) => {
+    // backend may support deletion by query params: familyId & monthYear
+    const response = await api.delete(`/admin/vdf/family-exemptions?familyId=${familyId}&monthYear=${encodeURIComponent(monthYear)}`);
+    return response.data;
+  },
+
   // ==================== Member APIs ====================
   
   getMyContributions: async (year) => {
@@ -111,36 +134,6 @@ export const vdfService = {
 
   getMyStatus: async () => {
     const response = await api.get('/member/vdf/my-status');
-    return response.data;
-  },
-
-   createExpense: async (data) => {
-    const response = await api.post('/admin/vdf/expenses', data);
-    return response.data;
-  },
-
-  updateExpense: async (id, data) => {
-    const response = await api.put(`/admin/vdf/expenses/${id}`, data);
-    return response.data;
-  },
-
-  deleteExpense: async (id) => {
-    const response = await api.delete(`/admin/vdf/expenses/${id}`);
-    return response.data;
-  },
-
-  getAllExpenses: async (page = 0, size = 20) => {
-    const response = await api.get(`/admin/vdf/expenses?page=${page}&size=${size}`);
-    return response.data;
-  },
-
-  getExpensesByCategory: async (categoryId) => {
-    const response = await api.get(`/admin/vdf/expenses/category/${categoryId}`);
-    return response.data;
-  },
-
-  getExpenseCategories: async () => {
-    const response = await api.get('/admin/vdf/expense-categories');
     return response.data;
   },
 

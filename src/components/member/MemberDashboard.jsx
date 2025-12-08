@@ -39,6 +39,7 @@ const MemberDashboard = () => {
           <h1 className="text-3xl font-bold text-gray-800">Welcome, {dashboard.memberName}</h1>
           <p className="text-gray-600 mt-2">Phone: {dashboard.phone}</p>
         </div>
+        {/* Removed View My VDF Account quick link as requested */}
       </div>
 
 

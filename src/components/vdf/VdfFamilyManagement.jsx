@@ -134,18 +134,18 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           </p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Collected (This Year)</h3>
+          <h3 className="text-sm font-medium opacity-90">Total Collected (All-time)</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
-              families.reduce((sum, f) => sum + (f.totalAmountPaid || 0), 0)
+              families.reduce((sum, f) => sum + (f.totalPaidAllTime || f.totalAmountPaid || 0), 0)
             )}
           </p>
         </div>
         <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Dues (This Year)</h3>
+          <h3 className="text-sm font-medium opacity-90">Total Dues (All-time)</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
-              families.reduce((sum, f) => sum + (f.totalAmountDue || 0), 0)
+              families.reduce((sum, f) => sum + (f.totalDueAllTime || f.totalAmountDue || 0), 0)
             )}
           </p>
         </div>
@@ -181,15 +181,15 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                     <span className="font-medium text-green-600">{family.totalPaidMonths}/12</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Paid:</span>
+                    <span className="text-gray-600">Total Paid (All-time):</span>
                     <span className="font-medium text-green-600">
-                      {formatCurrency(family.totalAmountPaid)}
+                      {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Due:</span>
+                    <span className="text-gray-600">Total Due (All-time):</span>
                     <span className="font-medium text-red-600">
-                      {formatCurrency(family.totalAmountDue)}
+                      {formatCurrency(family.totalDueAllTime || family.totalAmountDue || 0)}
                     </span>
                   </div>
                 </>
@@ -260,10 +260,16 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                  {formatCurrency(family.totalAmountPaid || 0)}
+                  {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
+                  {(family.totalPaidAllTime && family.totalAmountPaid && family.totalPaidAllTime !== family.totalAmountPaid) && (
+                    <div className="text-xxs text-gray-500">({formatCurrency(family.totalAmountPaid || 0)} this year)</div>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                  {formatCurrency(family.totalAmountDue || 0)}
+                  {formatCurrency(family.totalDueAllTime || family.totalAmountDue || 0)}
+                  {(family.totalDueAllTime && family.totalAmountDue && family.totalDueAllTime !== family.totalAmountDue) && (
+                    <div className="text-xxs text-gray-500">({formatCurrency(family.totalAmountDue || 0)} this year)</div>
+                  )}
                 </td>
                 {!readOnly && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

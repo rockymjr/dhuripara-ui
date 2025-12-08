@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useMemberAuth } from '../../context/MemberAuthContext';
-import MemberManagement from './MemberManagement';
 import LoanManagement from './LoanManagement';
 import DepositManagement from './DepositManagement';
 
 const sections = [
-    { key: 'members', label: 'Members' },
     { key: 'loans', label: 'Loans' },
     { key: 'deposits', label: 'Deposits' }
 ];
@@ -17,7 +15,7 @@ const filters = [
 ];
 
 const GraminBank = () => {
-    const [selectedSection, setSelectedSection] = useState('members');
+    const [selectedSection, setSelectedSection] = useState('loans');
     const [selectedFilter, setSelectedFilter] = useState('active');
     const { isOperator } = useMemberAuth() || {};
 
@@ -25,8 +23,6 @@ const GraminBank = () => {
         // Operators should see readOnly views
         const readOnly = !!isOperator;
         switch (selectedSection) {
-            case 'members':
-                return <MemberManagement />;
             case 'loans':
                 return <LoanManagement readOnly={readOnly} />;
             case 'deposits':

@@ -1,8 +1,9 @@
 // src/components/common/UpdatedNavbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useMemberAuth } from '../../context/MemberAuthContext';
+import { memberService } from '../../services/memberService';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Home, User, LogOut, Users as UsersIcon, TrendingUp, TrendingDown, 
@@ -28,6 +29,26 @@ const UpdatedNavbar = () => {
   const showAdminMenu = isAdmin;
   const showMemberMenu = isMember && !isOperator;
   const showOperatorMenu = isMember && isOperator;
+  const [hasBankActivity, setHasBankActivity] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetch = async () => {
+      if (!isMember) return;
+      try {
+        const data = await memberService.getDashboard();
+        if (!mounted) return;
+        const deposits = data?.deposits || [];
+        const loans = data?.loans || [];
+        setHasBankActivity(deposits.length > 0 || loans.length > 0);
+      } catch (err) {
+        // ignore - treat as no activity
+        setHasBankActivity(false);
+      }
+    };
+    fetch();
+    return () => { mounted = false; };
+  }, [isMember]);
 
   return (
     <nav className="bg-green-600 text-white shadow-lg sticky top-0 z-50">
@@ -97,10 +118,26 @@ const UpdatedNavbar = () => {
             </Link>
           )}
 
-          {(showOperatorMenu || showMemberMenu) && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-blue-600 hover:bg-blue-700 transition px-1" title="MyHome">
+          {/* Admin/Operator: Members button */}
+          {(showAdminMenu || showOperatorMenu) && (
+            <Link to="/admin/members" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-purple-600 hover:bg-purple-700 transition px-1" title="Members">
+              <UsersIcon size={22} />
+              <span className="text-xs text-white mt-1">Members</span>
+            </Link>
+          )}
+
+          {(showOperatorMenu || showMemberMenu) && hasBankActivity && (
+            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-blue-600 hover:bg-blue-700 transition px-1" title="MyBank">
               <Home size={22} />
-              <span className="text-xs text-white mt-1">MyHome</span>
+              <span className="text-xs text-white mt-1">MyBank</span>
+            </Link>
+          )}
+
+          {/* MyVDF quick access (members/operators) */}
+          {(showOperatorMenu || showMemberMenu) && (
+            <Link to="/member/account" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-cyan-600 hover:bg-cyan-700 transition px-1" title="MyVDF">
+              <Package size={22} />
+              <span className="text-xs text-white mt-1">MyVDF</span>
             </Link>
           )}
         </div>
@@ -124,10 +161,24 @@ const UpdatedNavbar = () => {
             </Link>
           )}
 
-          {(showOperatorMenu || showMemberMenu) && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-blue-600 hover:bg-blue-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label="MyHome">
+          {(showAdminMenu || showOperatorMenu) && (
+            <Link to="/admin/members" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-purple-600 hover:bg-purple-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label="Members">
+              <UsersIcon size={18} />
+              <span className="text-[11px] text-white mt-1">Members</span>
+            </Link>
+          )}
+
+          {(showOperatorMenu || showMemberMenu) && hasBankActivity && (
+            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-blue-600 hover:bg-blue-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label="MyBank">
               <Home size={18} />
-              <span className="text-[11px] text-white mt-1">MyHome</span>
+              <span className="text-[11px] text-white mt-1">MyBank</span>
+            </Link>
+          )}
+
+          {(showOperatorMenu || showMemberMenu) && (
+            <Link to="/member/account" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-cyan-600 hover:bg-cyan-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label="MyVDF">
+              <Package size={18} />
+              <span className="text-[11px] text-white mt-1">MyVDF</span>
             </Link>
           )}
         </div>

@@ -47,6 +47,14 @@ export const memberService = {
     return response.data;
   },
 
+  getVdfAccount: async () => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get('/member/vdf/account', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  },
+
   changePin: async (oldPin, newPin) => {
     const token = localStorage.getItem('memberToken');
     const response = await api.put('/member/change-pin',

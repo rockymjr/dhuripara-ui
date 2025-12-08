@@ -137,7 +137,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           <h3 className="text-xs md:text-sm font-medium opacity-90">Collected</h3>
           <p className="text-lg md:text-2xl font-bold mt-1 md:mt-2">
             {formatCurrency(
-              families.reduce((sum, f) => sum + (f.totalAmountPaid || 0), 0)
+              families.reduce((sum, f) => sum + (f.totalPaidAllTime || f.totalAmountPaid || 0), 0)
             )}
           </p>
         </div>
@@ -145,7 +145,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           <h3 className="text-xs md:text-sm font-medium opacity-90">Dues</h3>
           <p className="text-lg md:text-2xl font-bold mt-1 md:mt-2">
             {formatCurrency(
-              families.reduce((sum, f) => sum + (f.totalAmountDue || 0), 0)
+              families.reduce((sum, f) => sum + (f.totalDueAllTime || f.totalAmountDue || 0), 0)
             )}
           </p>
         </div>
@@ -188,10 +188,16 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                     </span>
                   </td>
                   <td className="px-2 md:px-3 py-2 text-xs font-semibold text-green-600 border border-gray-200 text-right">
-                    {formatCurrency(family.totalAmountPaid || 0)}
+                    {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
+                    { (family.totalPaidAllTime && family.totalAmountPaid && family.totalPaidAllTime !== family.totalAmountPaid) && (
+                      <div className="text-xxs text-gray-500">({formatCurrency(family.totalAmountPaid || 0)} this year)</div>
+                    )}
                   </td>
                   <td className="px-2 md:px-3 py-2 text-xs font-semibold text-red-600 border border-gray-200 text-right">
-                    {formatCurrency(family.totalAmountDue || 0)}
+                    {formatCurrency(family.totalDueAllTime || family.totalAmountDue || 0)}
+                    { (family.totalDueAllTime && family.totalAmountDue && family.totalDueAllTime !== family.totalAmountDue) && (
+                      <div className="text-xxs text-gray-500">({formatCurrency(family.totalAmountDue || 0)} this year)</div>
+                    )}
                   </td>
                   {!readOnly && (
                     <td className="px-2 md:px-3 py-2 text-center border border-gray-200">

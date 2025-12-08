@@ -64,7 +64,7 @@ const VdfMonthlyContribution = () => {
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let year = currentYear; year >= 2024; year--) {
+    for (let year = currentYear; year >= 2023; year--) {
       years.push(year);
     }
     return years;
@@ -131,11 +131,17 @@ const VdfMonthlyContribution = () => {
               <div className="flex items-center space-x-3 text-xs flex-shrink-0">
                 <div className="text-right">
                   <p className="text-gray-600">Paid</p>
-                  <p className="font-semibold text-green-600">{formatCurrency(family.totalPaid)}</p>
+                  <p className="font-semibold text-green-600">{formatCurrency(family.totalPaidAllTime || family.totalPaid || 0)}</p>
+                  {(family.totalPaidAllTime && family.totalPaid) && (family.totalPaidAllTime !== family.totalPaid) && (
+                    <div className="text-xxs text-gray-500">(This year: {formatCurrency(family.totalPaid || 0)})</div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-gray-600">Due</p>
-                  <p className="font-semibold text-red-600">{formatCurrency(family.totalDue)}</p>
+                  <p className="font-semibold text-red-600">{formatCurrency(family.totalDueAllTime || family.totalDue || 0)}</p>
+                  {(family.totalDueAllTime && family.totalDue) && (family.totalDueAllTime !== family.totalDue) && (
+                    <div className="text-xxs text-gray-500">(This year: {formatCurrency(family.totalDue || 0)})</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -145,20 +151,63 @@ const VdfMonthlyContribution = () => {
               <div className="bg-gray-50 p-3">
                 <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   {MONTHS.map((month, idx) => {
-                    const isPaid = family.paidMonths?.[idx] === true;
+                    const monthIndex = idx + 1;
+                    const monText = `${selectedYear}-${String(monthIndex).padStart(2,'0')}`;
+
+                    const isPaid = family.paidMonths?.[idx] === true || family.paidMap?.[monText] === true;
                     const monthPaid = isPaid ? family.monthlyAmount : 0;
-                    
+
+                    // Try several possible shapes for exemption information
+                    const isExempted = Boolean(
+                      family.exemptedMonths?.[idx] ||
+                      family.exemptionsMap?.[monText] ||
+                      family.months?.[idx]?.is_exempted ||
+                      family.months?.[idx]?.isExempted
+                    );
+
+                    const handleToggleExempt = async () => {
+                      if (!isAdmin) return;
+                      const confirmMsg = isExempted
+                        ? `Remove exemption for ${family.familyHeadName} - ${monText}?`
+                        : `Mark ${family.familyHeadName} as exempt for ${monText}?`;
+                      if (!window.confirm(confirmMsg)) return;
+
+                      try {
+                        if (!isExempted) {
+                          await vdfService.createFamilyExemption({ familyId: family.familyConfigId || family.familyConfigId || family.familyId || family.family_id, monthYear: monText, reason: 'Marked exempt via UI' });
+                        } else {
+                          await vdfService.deleteFamilyExemption(family.familyConfigId || family.familyConfigId || family.familyId || family.family_id, monText);
+                        }
+                        await fetchMatrix();
+                      } catch (err) {
+                        console.error('Error toggling exemption:', err);
+                        alert('Failed to update exemption: ' + (err?.message || err));
+                      }
+                    };
+
                     return (
                       <div key={idx} className="bg-white p-2 rounded border border-gray-200 text-center text-xs">
                         <div className="font-medium text-gray-700 mb-1">{month}</div>
                         {isPaid ? (
                           <CheckCircle size={14} className="text-green-600 mx-auto mb-1" />
+                        ) : isExempted ? (
+                          <Calendar size={14} className="text-blue-500 mx-auto mb-1" />
                         ) : (
                           <XCircle size={14} className="text-gray-300 mx-auto mb-1" />
                         )}
-                        <span className={`font-semibold block ${isPaid ? 'text-green-600' : 'text-gray-500'}`}>
-                          {formatCurrency(monthPaid)}
+
+                        <span className={`font-semibold block ${isPaid ? 'text-green-600' : isExempted ? 'text-blue-600' : 'text-gray-500'}`}>
+                          {isExempted ? 'Exempt' : formatCurrency(monthPaid)}
                         </span>
+
+                        {isAdmin && (
+                          <button
+                            onClick={handleToggleExempt}
+                            className={`mt-2 text-xs px-2 py-0.5 rounded ${isExempted ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-teal-50 text-teal-600 border border-teal-100'}`}
+                          >
+                            {isExempted ? 'Undo Exempt' : 'Mark Exempt'}
+                          </button>
+                        )}
                       </div>
                     );
                   })}

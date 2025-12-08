@@ -1,18 +1,18 @@
-// src/App.jsx - Updated with VDF routes
+// src/App.jsx - RouterProvider with future flags to silence react-router warnings
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { MemberAuthProvider, useMemberAuth } from './context/MemberAuthContext';
 import { LanguageProvider } from './context/LanguageContext';
-import Navbar from './components/common/UpdatedNavbar'; // Use updated navbar
+import Navbar from './components/common/UpdatedNavbar';
 import Footer from './components/common/Footer';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import MemberProtectedRoute from './components/common/MemberProtectedRoute';
 import UnifiedLogin from './components/common/UnifiedLogin';
-import { initGA, trackPageView } from './utils/analytics';
+import { initGA } from './utils/analytics';
 
 // Public Pages
-import UpdatedSummary from './components/public/UpdatedSummary'; // Updated with VDF
+import UpdatedSummary from './components/public/UpdatedSummary';
 import DepositList from './components/public/DepositList';
 import LoanList from './components/public/LoanList';
 
@@ -33,24 +33,12 @@ import YearlyReport from './components/admin/YearlyReport';
 import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
 import VdfExpenseManagement from './components/vdf/VdfExpenseManagement';
 import VdfDepositManagement from './components/vdf/VdfDepositManagement';
-//import VdfContributionManagement from './components/admin/vdf/VdfContributionManagement';
 
 // Member Pages
 import MemberDashboard from './components/member/MemberDashboard';
+import MemberAccount from './components/member/MemberAccount';
 import GraminBank from './components/admin/GraminBank';
 
-// Analytics Tracker Component
-// function AnalyticsTracker() {
-//   const location = useLocation();
-
-//   useEffect(() => {
-//     trackPageView(location.pathname + location.search, document.title);
-//   }, [location]);
-
-//   return null;
-// }
-
-// Main App Component
 function App() {
   useEffect(() => {
     initGA();
@@ -60,149 +48,79 @@ function App() {
     <LanguageProvider>
       <AuthProvider>
         <MemberAuthProvider>
-          <Router>
-            {/* <AnalyticsTracker /> */}
-            <div className="flex flex-col min-h-screen bg-gray-50">
-              <Navbar />
-              <main className="flex-grow">
-                <AppRoutes />
-              </main>
-              <Footer />
-            </div>
-          </Router>
+          <RouterWrapper />
         </MemberAuthProvider>
       </AuthProvider>
     </LanguageProvider>
   );
 }
 
-// AppRoutes Component
-function AppRoutes() {
-  let isOperator = false;
-  try {
-    const memberCtx = useMemberAuth();
-    isOperator = !!memberCtx?.isOperator;
-  } catch (err) {
-    // If hook is used outside provider or any other error occurs, log and continue with defaults
-    console.error('useMemberAuth threw in AppRoutes, defaulting isOperator=false', err);
-    isOperator = false;
+function RouterWrapper() {
+  const memberCtx = useMemberAuth();
+  const isOperator = !!memberCtx?.isOperator;
+  function Layout() {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="flex-grow">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<UpdatedSummary />} />
-      <Route path="/deposits" element={<DepositList />} />
-      <Route path="/loans" element={<LoanList />} />
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <>
+        <Route element={<Layout />}>
+        {/* Public Routes */}
+        <Route path="/" element={<UpdatedSummary />} />
+        <Route path="/deposits" element={<DepositList />} />
+        <Route path="/loans" element={<LoanList />} />
 
-      {/* VDF Public Routes */}
-      <Route path="/vdf" element={<VdfLanding />} />
-      <Route path="/vdf/expenses" element={<VdfPublicExpenses />} />
-      <Route path="/vdf/deposits" element={<VdfPublicDeposits />} />
-      <Route path="/vdf/contributions" element={<VdfMonthlyContribution />} />
+        {/* VDF Public Routes */}
+        <Route path="/vdf" element={<VdfLanding />} />
+        <Route path="/vdf/expenses" element={<VdfPublicExpenses />} />
+        <Route path="/vdf/deposits" element={<VdfPublicDeposits />} />
+        <Route path="/vdf/contributions" element={<VdfMonthlyContribution />} />
 
-      {/* Unified Login Route */}
-      <Route path="/login" element={<UnifiedLogin />} />
+        {/* Auth / Login */}
+        <Route path="/login" element={<UnifiedLogin />} />
 
-      {/* Admin Routes - Banking */}
-      <Route
-        path="/admin/gramin-bank"
-        element={
-          isOperator
-            ? <GraminBank />
-            : <ProtectedRoute><GraminBank /></ProtectedRoute>
-        }
-      />
-      <Route path="/admin/dashboard" element={<Navigate to="/admin/members" replace />} />
-      <Route
-        path="/admin/members"
-        element={
-          isOperator
-            ? <MemberManagement readOnly={true} />
-            : <ProtectedRoute><MemberManagement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/deposits"
-        element={
-          isOperator
-            ? <DepositManagement readOnly={true} />
-            : <ProtectedRoute><DepositManagement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/loans"
-        element={
-          isOperator
-            ? <LoanManagement readOnly={true} />
-            : <ProtectedRoute><LoanManagement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/statements"
-        element={
-          isOperator
-            ? <MemberStatement readOnly={true} />
-            : <ProtectedRoute><MemberStatement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/reports"
-        element={
-          <ProtectedRoute>
-            <YearlyReport />
-          </ProtectedRoute>
-        }
-      />
+        {/* Admin banking */}
+        <Route path="/admin/gramin-bank" element={isOperator ? <GraminBank /> : <ProtectedRoute><GraminBank /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<Navigate to="/admin/members" replace />} />
+        <Route path="/admin/members" element={isOperator ? <MemberManagement readOnly={true} /> : <ProtectedRoute><MemberManagement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/deposits" element={isOperator ? <DepositManagement readOnly={true} /> : <ProtectedRoute><DepositManagement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/loans" element={isOperator ? <LoanManagement readOnly={true} /> : <ProtectedRoute><LoanManagement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/statements" element={isOperator ? <MemberStatement readOnly={true} /> : <ProtectedRoute><MemberStatement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/reports" element={<ProtectedRoute><YearlyReport /></ProtectedRoute>} />
 
-      {/* Admin Routes - VDF */}
-      <Route
-        path="/admin/vdf/families"
-        element={
-          isOperator
-            ? <VdfFamilyManagement readOnly={true} />
-            : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/vdf/deposits"
-        element={
-          <ProtectedRoute>
-            <VdfDepositManagement />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/vdf/expenses"
-        element={
-          <ProtectedRoute>
-            <VdfExpenseManagement />
-          </ProtectedRoute>
-        }
-      />
-      {/* <Route
-        path="/admin/vdf/contributions"
-        element={
-          <ProtectedRoute>
-            <VdfContributionManagement />
-          </ProtectedRoute>
-        }
-      /> */}
+        {/* Admin - VDF */}
+        <Route path="/admin/vdf/families" element={isOperator ? <VdfFamilyManagement readOnly={true} /> : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/vdf/deposits" element={<ProtectedRoute><VdfDepositManagement /></ProtectedRoute>} />
+        <Route path="/admin/vdf/expenses" element={<ProtectedRoute><VdfExpenseManagement /></ProtectedRoute>} />
 
-      {/* Member Routes */}
-      <Route
-        path="/member/dashboard"
-        element={
-          <MemberProtectedRoute>
-            <MemberDashboard />
-          </MemberProtectedRoute>
-        }
-      />
+        {/* Member */}
+        <Route path="/member/dashboard" element={<MemberProtectedRoute><MemberDashboard /></MemberProtectedRoute>} />
+        <Route path="/member/account" element={<MemberProtectedRoute><MemberAccount /></MemberProtectedRoute>} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </>
+    ),
+    {
+      future: {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      },
+    }
   );
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;
+// end of file
