@@ -349,7 +349,7 @@ const translations = {
     // Status
     active: 'সক্রিয়',
     closed: 'বন্ধ',
-    returned: 'ফেরত দেওয়া হয়েছে',
+    returned: 'ফেরত',
     settled: 'নিষ্পত্তি',
     inactive: 'নিষ্ক্রিয়',
     
