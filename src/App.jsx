@@ -32,6 +32,7 @@ import YearlyReport from './components/admin/YearlyReport';
 // VDF Admin Pages
 import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
 import VdfExpenseManagement from './components/vdf/VdfExpenseManagement';
+import VdfDepositManagement from './components/vdf/VdfDepositManagement';
 //import VdfContributionManagement from './components/admin/vdf/VdfContributionManagement';
 
 // Member Pages
@@ -164,6 +165,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/vdf/deposits"
+        element={
+          <ProtectedRoute>
+            <VdfDepositManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/vdf/expenses"
         element={
           <ProtectedRoute>
@@ -189,25 +198,6 @@ function AppRoutes() {
           </MemberProtectedRoute>
         }
       />
-
-      {/* Admin Routes - VDF */}
-      <Route
-        path="/admin/vdf/families"
-        element={
-          isOperator
-            ? <VdfFamilyManagement readOnly={true} />
-            : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/vdf/expenses"
-        element={
-          <ProtectedRoute>
-            <VdfExpenseManagement />
-          </ProtectedRoute>
-        }
-      />
-    
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

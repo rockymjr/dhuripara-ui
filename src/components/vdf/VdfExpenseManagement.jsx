@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { vdfService } from "../../services/vdfService";
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
-import { Package, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Filter, Info } from 'lucide-react';
 import Loader from '../common/Loader';
 import StyledTable from '../common/StyledTable';
 import VdfExpenseForm from './VdfExpenseForm';
@@ -19,6 +19,7 @@ const VdfExpenseManagement = () => {
   const [editingExpense, setEditingExpense] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedNotes, setSelectedNotes] = useState(null);
   const { isAuthenticated: isAdmin } = useAuth();
 
   useEffect(() => {
@@ -106,29 +107,26 @@ const VdfExpenseManagement = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-3 md:mb-6 gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <Package size={24} className="text-orange-600" />
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">Expenses</h2>
+          <Package size={20} className="text-orange-600" />
+          <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Year Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs md:text-sm font-medium text-gray-700 whitespace-nowrap">Year:</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-2 md:px-3 py-1 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              {[2024, 2025, 2026].map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+          >
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
           {isAdmin && (
             <button
               onClick={handleAddNew}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-lg flex items-center space-x-1 transition text-sm md:text-base"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg flex items-center space-x-1 transition text-sm"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Add</span>
@@ -137,177 +135,129 @@ const VdfExpenseManagement = () => {
         </div>
       </div>
 
-      {/* Summary Cards - Total This Year in Table Format */}
-      <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-3 md:mb-6">
-        <table className="w-full">
-          <tbody>
-            <tr>
-              <td className="px-3 py-2 text-sm md:text-base font-medium text-gray-700">Total This Year:</td>
-              <td className="px-3 py-2 text-sm md:text-base font-bold text-orange-600 text-right">{formatCurrency(totalExpenses)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Category Summary - Table Format */}
-      {expensesByCategory.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-3 md:mb-6 overflow-x-auto">
-          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3">Expense by Category</h3>
-          <table className="w-full text-xs md:text-sm">
-            <thead>
-              <tr className="border-b-2 border-orange-300">
-                <th className="text-left px-3 py-2 font-semibold text-gray-700">Category</th>
-                <th className="text-right px-3 py-2 font-semibold text-gray-700">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expensesByCategory.map((item, idx) => (
-                <tr key={idx} className="border-b border-gray-200 odd:bg-gray-50 hover:bg-gray-100">
-                  <td className="px-3 py-2 text-gray-800">{item.name}</td>
-                  <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(item.total)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Summary Card */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-3 mb-4 text-white">
+        <div className="flex justify-between items-center">
+          <span className="text-sm opacity-90">Total Expenses {selectedYear}</span>
+          <span className="text-xl font-bold">{formatCurrency(totalExpenses)}</span>
         </div>
-      )}
-
-      {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-3">
-        {filteredExpenses.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500 text-sm">
-            No expenses found for selected filters
-          </div>
-        ) : (
-          filteredExpenses.map((expense) => (
-            <div key={expense.id} className="bg-white rounded-lg shadow p-3 group">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-xs md:text-sm">{expense.description}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{formatDate(expense.expenseDate)}</p>
-                </div>
-                <span className="px-1.5 py-0.5 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap ml-2">
-                  {expense.categoryName}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs md:text-sm mb-2">
-                <span className="text-gray-600">Amount:</span>
-                <span className="font-semibold text-orange-600">{formatCurrency(expense.amount)}</span>
-              </div>
-              {expense.notes && (
-                <div className="text-xs text-gray-500 italic mb-2 group-hover:text-gray-700 transition">
-                  📝 {expense.notes}
-                </div>
-              )}
-              {isAdmin && (
-                <div className="mt-2 flex gap-1">
-                  <button
-                    onClick={() => handleEdit(expense)}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1 rounded-lg flex items-center justify-center transition text-xs"
-                    title="Edit"
-                  >
-                    <Edit size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(expense.id)}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 rounded-lg flex items-center justify-center transition text-xs"
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Expenses by Category */}
+      {expensesByCategory.length > 0 && (
+        <div className="bg-white rounded-lg shadow mb-4 overflow-hidden">
+          <div className="px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-semibold">
+            By Category
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
-                <tr>
-                  <th className="px-3 py-2 text-left font-semibold">Date</th>
-                  <th className="px-3 py-2 text-left font-semibold">Category</th>
-                  <th className="px-3 py-2 text-left font-semibold">Description</th>
-                  <th className="px-3 py-2 text-right font-semibold">Amount</th>
-                  {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-3 py-2 text-left font-semibold text-gray-700">Category</th>
+                  <th className="px-3 py-2 text-right font-semibold text-gray-700">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredExpenses.length === 0 ? (
-                  <tr>
-                    <td colSpan={isAdmin ? 5 : 4} className="px-3 py-3 text-center text-gray-500">
-                      No expenses found for selected filters
-                    </td>
+                {expensesByCategory.map((item, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 font-medium text-gray-900">{item.name}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(item.total)}</td>
                   </tr>
-                ) : (
-                  filteredExpenses.map((expense) => (
-                    <tr key={expense.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
-                      <td className="px-3 py-2">
-                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
-                          {expense.categoryName}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
-                        {expense.description || '-'}
-                      </td>
-                      <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
-                        {formatCurrency(expense.amount)}
-                      </td>
-                      {isAdmin && (
-                        <td className="px-3 py-2 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleEdit(expense)}
-                              className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition"
-                              title="Edit"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(expense.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded transition"
-                              title="Delete"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         </div>
+      )}
+
+      {/* Main Expenses Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+              <tr>
+                <th className="px-3 py-2 text-left font-semibold">Date</th>
+                <th className="px-3 py-2 text-left font-semibold">Category</th>
+                <th className="px-3 py-2 text-left font-semibold">Description</th>
+                <th className="px-3 py-2 text-right font-semibold">Amount</th>
+                <th className="px-3 py-2 text-center font-semibold">Notes</th>
+                {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredExpenses.length === 0 ? (
+                <tr>
+                  <td colSpan={isAdmin ? 6 : 5} className="px-3 py-3 text-center text-gray-500">
+                    No expenses found
+                  </td>
+                </tr>
+              ) : (
+                filteredExpenses.map((expense) => (
+                  <tr key={expense.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
+                    <td className="px-3 py-2">
+                      <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
+                        {expense.categoryName}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
+                      {expense.description || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
+                      {formatCurrency(expense.amount)}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      {expense.notes ? (
+                        <button
+                          onClick={() => setSelectedNotes(expense.notes)}
+                          className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition"
+                          title="View notes"
+                        >
+                          <Info size={16} />
+                        </button>
+                      ) : (
+                        <span className="text-gray-300">-</span>
+                      )}
+                    </td>
+                    {isAdmin && (
+                      <td className="px-3 py-2 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleEdit(expense)}
+                            className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(expense.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-gray-700">
-            Page <span className="font-medium">{page + 1}</span> of{' '}
-            <span className="font-medium">{totalPages}</span> (showing {filteredExpenses.length} of {expenses.length} expenses)
-          </p>
-          <div className="flex space-x-2">
+      {/* Notes Modal */}
+      {selectedNotes && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Notes</h3>
+            <p className="text-gray-700 mb-6 whitespace-pre-wrap break-words">{selectedNotes}</p>
             <button
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0}
-              className="p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setSelectedNotes(null)}
+              className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition"
             >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages - 1}
-              className="p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={20} />
+              Close
             </button>
           </div>
         </div>
