@@ -154,16 +154,15 @@ const VdfPublicDeposits = () => {
         </div>
       )}
 
-      {/* Main Deposits Table - Desktop View */}
-      <div className="bg-white rounded-lg shadow overflow-hidden hidden sm:block">
+      {/* Main Deposits Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gradient-to-r from-green-600 to-green-700 text-white">
               <tr>
                 <th className="px-3 py-2 text-left font-semibold">Date</th>
                 <th className="px-3 py-2 text-left font-semibold">Type</th>
-                <th className="px-3 py-2 text-left font-semibold hidden sm:table-cell">Source</th>
-                <th className="px-3 py-2 text-left font-semibold hidden md:table-cell">Description</th>
+                <th className="px-3 py-2 text-left font-semibold">Source</th>
                 <th className="px-3 py-2 text-right font-semibold">Amount</th>
                 {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
               </tr>
@@ -171,33 +170,23 @@ const VdfPublicDeposits = () => {
             <tbody className="divide-y divide-gray-200">
               {deposits.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-3 py-3 text-center text-gray-500">
+                  <td colSpan={isAdmin ? 5 : 4} className="px-3 py-3 text-center text-gray-500">
                     No deposits found
                   </td>
                 </tr>
               ) : (
                 deposits.map((deposit) => (
                   <tr key={deposit.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap">{formatDate(deposit.depositDate)}</td>
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(deposit.depositDate)}</td>
                     <td className="px-3 py-2">
                       <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800 whitespace-nowrap">
                         {deposit.sourceType}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-gray-700 hidden sm:table-cell truncate max-w-xs">
-                      {deposit.sourceName}
+                    <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
+                      {deposit.sourceName || '-'}
                     </td>
-                    <td className="px-3 py-2 text-gray-700 hidden md:table-cell truncate max-w-xs relative">
-                      {deposit.description || '-'}
-                      {deposit.notes && (
-                        <Info 
-                          size={14} 
-                          className="inline-block ml-1 text-gray-400 cursor-help"
-                          title={`Notes: ${deposit.notes}`}
-                        />
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right font-semibold text-green-600 whitespace-nowrap">
+                    <td className="px-3 py-2 text-right font-semibold text-green-600 whitespace-nowrap text-xs sm:text-sm">
                       {formatCurrency(deposit.amount)}
                     </td>
                     {isAdmin && (
@@ -226,65 +215,6 @@ const VdfPublicDeposits = () => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="block sm:hidden space-y-2">
-        {deposits.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-            No deposits found
-          </div>
-        ) : (
-          deposits.map((deposit) => (
-            <div key={deposit.id} className="bg-white rounded-lg shadow overflow-hidden border-l-4 border-green-600">
-              {/* Row 1: Date and Type */}
-              <div className="grid grid-cols-2 gap-3 px-3 py-2 border-b border-gray-200 bg-gray-50">
-                <div>
-                  <p className="text-xs text-gray-600 font-medium">Date</p>
-                  <p className="text-xs font-semibold text-gray-800">{formatDate(deposit.depositDate)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 font-medium">Type</p>
-                  <p className="text-xs font-semibold text-green-700">{deposit.sourceType}</p>
-                </div>
-              </div>
-
-              {/* Row 2: Source and Amount */}
-              <div className="grid grid-cols-2 gap-3 px-3 py-2 border-b border-gray-200">
-                <div>
-                  <p className="text-xs text-gray-600 font-medium">Source</p>
-                  <p className="text-xs text-gray-700 truncate">{deposit.sourceName || '-'}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-600 font-medium">Amount</p>
-                  <p className="text-sm font-bold text-green-600">{formatCurrency(deposit.amount)}</p>
-                </div>
-              </div>
-
-              {/* Row 3: Action */}
-              {isAdmin && (
-                <div className="flex gap-2 px-3 py-2">
-                  <button
-                    onClick={() => handleEdit(deposit)}
-                    className="flex-1 py-1 px-2 text-xs text-indigo-600 hover:bg-indigo-50 border border-indigo-300 rounded transition flex items-center justify-center gap-1"
-                    title="Edit"
-                  >
-                    <Edit size={14} />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(deposit.id)}
-                    className="flex-1 py-1 px-2 text-xs text-red-600 hover:bg-red-50 border border-red-300 rounded transition flex items-center justify-center gap-1"
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
       </div>
 
       {/* Deposit Form Modal */}

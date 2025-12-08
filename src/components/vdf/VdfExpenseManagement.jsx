@@ -224,71 +224,67 @@ const VdfExpenseManagement = () => {
 
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        <StyledTable
-          renderHeader={() => (
-            <>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Date</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Category</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Description</th>
-              <th className="px-4 py-3 text-right text-sm font-semibold text-white uppercase tracking-wide">Amount</th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-white uppercase tracking-wide">Actions</th>
-            </>
-          )}
-        >
-          {filteredExpenses.length === 0 ? (
-            <tr>
-              <td colSpan="5" className="px-4 py-4 text-center text-gray-500">No expenses found for selected filters</td>
-            </tr>
-          ) : (
-            filteredExpenses.map((expense) => (
-              <tr key={expense.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100 group">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                  {formatDate(expense.expenseDate)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                  <span className="px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800">
-                    {expense.categoryName}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-900">
-                  <div className="max-w-xs">
-                    <p>{expense.description}</p>
-                    {expense.notes && (
-                      <p className="text-xs text-gray-500 italic mt-1 group-hover:text-gray-700 transition">
-                        📝 {expense.notes}
-                      </p>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-orange-600 text-right">
-                  {formatCurrency(expense.amount)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-center">
-                  {isAdmin ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(expense)}
-                        className="p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded transition"
-                        title="Edit expense"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(expense.id)}
-                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition"
-                        title="Delete expense"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    '-'
-                  )}
-                </td>
-              </tr>
-            ))
-          )}
-        </StyledTable>
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+                <tr>
+                  <th className="px-3 py-2 text-left font-semibold">Date</th>
+                  <th className="px-3 py-2 text-left font-semibold">Category</th>
+                  <th className="px-3 py-2 text-left font-semibold">Description</th>
+                  <th className="px-3 py-2 text-right font-semibold">Amount</th>
+                  {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredExpenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 5 : 4} className="px-3 py-3 text-center text-gray-500">
+                      No expenses found for selected filters
+                    </td>
+                  </tr>
+                ) : (
+                  filteredExpenses.map((expense) => (
+                    <tr key={expense.id} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
+                      <td className="px-3 py-2">
+                        <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
+                          {expense.categoryName}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
+                        {expense.description || '-'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
+                        {formatCurrency(expense.amount)}
+                      </td>
+                      {isAdmin && (
+                        <td className="px-3 py-2 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => handleEdit(expense)}
+                              className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition"
+                              title="Edit"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(expense.id)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                              title="Delete"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Pagination */}
