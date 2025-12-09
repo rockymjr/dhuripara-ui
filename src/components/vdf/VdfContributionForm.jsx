@@ -25,6 +25,7 @@ const VdfContributionForm = ({ family, year, onClose }) => {
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [loadingData, setLoadingData] = useState(false);
+  const [selectedExemptMonths, setSelectedExemptMonths] = useState([]);
 
   useEffect(() => {
     if (family) {
@@ -46,7 +47,8 @@ const VdfContributionForm = ({ family, year, onClose }) => {
         const existing = data?.find(c => c.month === month.value);
         contributions[month.value] = existing ? existing.amount.toString() : '';
       });
-      
+      // initialize selected exemptions; backend may supply exemptions later
+      setSelectedExemptMonths([]);
       setMonthlyContributions(contributions);
     } catch (error) {
       console.error('Error fetching contributions:', error);
@@ -61,12 +63,98 @@ const VdfContributionForm = ({ family, year, onClose }) => {
     }
   };
 
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const handleToggleSelectExempt = (monthValue) => {
+    setSelectedExemptMonths(prev => {
+      const exists = prev.includes(monthValue);
+      if (exists) return prev.filter(m => m !== monthValue);
+      return [...prev, monthValue];
+    });
+  };
+
+  const handleMarkExempt = async () => {
+    if (!family) return;
+    if (!selectedExemptMonths || selectedExemptMonths.length === 0) {
+      alert('Please select one or more months to mark exempt');
+      return;
+    }
+
+    const confirmMsg = `Mark selected months as exempt for ${family.familyHeadName}?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setLoading(true);
+      const promises = selectedExemptMonths.map(monthValue => {
+        const monthYear = `${year}-${pad(monthValue)}`;
+        return vdfService.createFamilyExemption({ familyId: family.familyConfigId, monthYear, reason: notes || 'Marked exempt via UI' });
+      });
+      await Promise.all(promises);
+      alert('Selected months marked as exempt');
+      onClose(true);
+    } catch (err) {
+      console.error('Error marking exemptions:', err);
+      alert('Failed to mark exemptions: ' + (err?.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnmarkExempt = async () => {
+    if (!family) return;
+    if (!selectedExemptMonths || selectedExemptMonths.length === 0) {
+      alert('Please select one or more months to remove exemption');
+      return;
+    }
+
+    const confirmMsg = `Remove exemption for selected months for ${family.familyHeadName}?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setLoading(true);
+      const promises = selectedExemptMonths.map(monthValue => {
+        const monthYear = `${year}-${pad(monthValue)}`;
+        return vdfService.deleteFamilyExemption(family.familyConfigId, monthYear);
+      });
+      await Promise.all(promises);
+      alert('Selected months un-exempted');
+      onClose(true);
+    } catch (err) {
+      console.error('Error removing exemptions:', err);
+      alert('Failed to remove exemptions: ' + (err?.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectAllExempt = () => {
+    setSelectedExemptMonths(MONTHS.map(m => m.value));
+  };
+
+  const handleClearSelectedExempt = () => {
+    setSelectedExemptMonths([]);
+  };
+
+  const handlePayAll = () => {
+    const amount = family?.monthlyAmount || 20;
+    const contributions = {};
+    MONTHS.forEach(m => {
+      contributions[m.value] = String(amount);
+    });
+    setMonthlyContributions(contributions);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     let hasAnyValue = false;
 
     MONTHS.forEach(month => {
       const amount = monthlyContributions[month.value];
+      const isExempt = selectedExemptMonths.includes(month.value);
+      
+      // Skip validation if exempted
+      if (isExempt) return;
+      
       if (amount && amount.trim()) {
         hasAnyValue = true;
         if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
@@ -75,12 +163,12 @@ const VdfContributionForm = ({ family, year, onClose }) => {
       }
     });
 
-    if (!hasAnyValue) {
-      newErrors.general = 'Please enter amount for at least one month';
+    if (!hasAnyValue && selectedExemptMonths.length === 0) {
+      newErrors.general = 'Please enter amount for at least one month or mark months as exempt';
     }
 
-    if (!paymentDate) {
-      newErrors.paymentDate = 'Payment date is required';
+    if (!paymentDate && selectedExemptMonths.length === 0) {
+      newErrors.paymentDate = 'Payment date is required when recording contributions';
     }
 
     setErrors(newErrors);
@@ -107,28 +195,51 @@ const VdfContributionForm = ({ family, year, onClose }) => {
     try {
       setLoading(true);
       
-      // Prepare contributions array
+      // Prepare contributions array - filter out exempted months
       const contributions = MONTHS
-        .filter(month => monthlyContributions[month.value] && monthlyContributions[month.value].trim())
+        .filter(month => {
+          // Skip if marked as exempt
+          if (selectedExemptMonths.includes(month.value)) return false;
+          // Only include if there's a value
+          return monthlyContributions[month.value] && monthlyContributions[month.value].trim();
+        })
         .map(month => ({
           month: month.value,
           amount: parseFloat(monthlyContributions[month.value])
         }));
 
+      if (contributions.length === 0) {
+        alert('Please enter at least one contribution amount');
+        setLoading(false);
+        return;
+      }
+
       const payload = {
-        familyConfigId: family.familyConfigId,
+        familyConfigId: family.familyConfigId || family.id,
         year: year,
         paymentDate: paymentDate,
         notes: notes || null,
         contributions: contributions
       };
 
-      await vdfService.recordBulkContributions(payload);
+      console.log('Submitting contributions payload:', JSON.stringify(payload, null, 2));
+      const response = await vdfService.recordBulkContributions(payload);
+      console.log('Response from server:', response);
       alert('Contributions saved successfully');
       onClose(true);
     } catch (error) {
-      console.error('Error saving contributions:', error);
-      alert('Failed to save contributions: ' + (error.response?.data?.message || error.message));
+      console.error('Full error object:', error);
+      const errorMsg = error?.response?.data?.message || 
+                      error?.response?.data?.error ||
+                      error?.message ||
+                      'Unknown error occurred';
+      console.error('Error details:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: errorMsg
+      });
+      alert('Failed to save contributions: ' + errorMsg);
     } finally {
       setLoading(false);
     }
@@ -191,6 +302,34 @@ const VdfContributionForm = ({ family, year, onClose }) => {
             />
           </div>
 
+          {/* Helper Buttons */}
+          <div className="flex gap-2 flex-wrap text-xs">
+            <button
+              type="button"
+              onClick={handlePayAll}
+              disabled={loading || loadingData}
+              className="px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition disabled:opacity-50"
+            >
+              Fill All Months
+            </button>
+            <button
+              type="button"
+              onClick={handleSelectAllExempt}
+              disabled={loading || loadingData}
+              className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 transition disabled:opacity-50"
+            >
+              Select All Exempt
+            </button>
+            <button
+              type="button"
+              onClick={handleClearSelectedExempt}
+              disabled={loading || loadingData}
+              className="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-300 rounded hover:bg-gray-200 transition disabled:opacity-50"
+            >
+              Clear Exemptions
+            </button>
+          </div>
+
           {/* Monthly Contributions Grid */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -201,26 +340,43 @@ const VdfContributionForm = ({ family, year, onClose }) => {
               <p className="text-gray-500 text-center py-4">Loading existing contributions...</p>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                {MONTHS.map(month => (
-                  <div key={month.value}>
-                    <label className="text-sm text-gray-600 mb-1 block">
-                      {month.label}
-                    </label>
-                    <input
-                      type="number"
-                      value={monthlyContributions[month.value] || ''}
-                      onChange={(e) => handleAmountChange(month.value, e.target.value)}
-                      placeholder="0"
-                      step="0.01"
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                        errors[month.value] ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    />
-                    {errors[month.value] && (
-                      <p className="text-red-500 text-xs mt-1">{errors[month.value]}</p>
-                    )}
-                  </div>
-                ))}
+                {MONTHS.map(month => {
+                  const isExempt = selectedExemptMonths.includes(month.value);
+                  return (
+                    <div key={month.value}>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm text-gray-600 mb-1 block">
+                          {month.label}
+                        </label>
+                        <label className="flex items-center text-xs text-gray-600">
+                          <input
+                            type="checkbox"
+                            checked={isExempt}
+                            onChange={() => handleToggleSelectExempt(month.value)}
+                            className="mr-2 w-4 h-4"
+                          />
+                          Exempt
+                        </label>
+                      </div>
+                      <input
+                        type="number"
+                        value={isExempt ? '' : (monthlyContributions[month.value] || '')}
+                        onChange={(e) => handleAmountChange(month.value, e.target.value)}
+                        placeholder="0"
+                        step="0.01"
+                        disabled={isExempt}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                          isExempt ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''
+                        } ${
+                          errors[month.value] ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors[month.value] && (
+                        <p className="text-red-500 text-xs mt-1">{errors[month.value]}</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -229,11 +385,18 @@ const VdfContributionForm = ({ family, year, onClose }) => {
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Total Amount:</p>
             <p className="text-2xl font-bold text-teal-600">
-              ₹{Object.values(monthlyContributions).reduce((sum, val) => {
+              ₹{Object.entries(monthlyContributions).reduce((sum, [month, val]) => {
+                // Don't count exempted months
+                if (selectedExemptMonths.includes(parseInt(month))) return sum;
                 const amount = parseFloat(val) || 0;
                 return sum + amount;
               }, 0).toFixed(2)}
             </p>
+            {selectedExemptMonths.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                ({selectedExemptMonths.length} month{selectedExemptMonths.length > 1 ? 's' : ''} marked as exempt)
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -241,14 +404,24 @@ const VdfContributionForm = ({ family, year, onClose }) => {
             <button
               type="button"
               onClick={() => onClose(false)}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+              className="px-3 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
             >
               Cancel
             </button>
+
+            <button
+              type="button"
+              onClick={handleMarkExempt}
+              disabled={loading || loadingData || selectedExemptMonths.length === 0}
+              className="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg font-medium hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Processing...' : `Mark Exempt (${selectedExemptMonths.length})`}
+            </button>
+
             <button
               type="submit"
               disabled={loading || loadingData}
-              className="flex-1 px-4 py-2 text-white bg-teal-600 hover:bg-teal-700 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-auto px-4 py-2 text-white bg-teal-600 hover:bg-teal-700 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Saving...' : 'Save Contributions'}
             </button>

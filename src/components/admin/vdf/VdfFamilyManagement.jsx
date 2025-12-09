@@ -157,7 +157,6 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           <thead>
             <tr className="bg-cyan-600 text-white">
               <th className="px-2 md:px-3 py-2 text-left text-xs font-semibold border border-cyan-500">Family Head</th>
-              <th className="px-2 md:px-3 py-2 text-left text-xs font-semibold border border-cyan-500">Month Amt</th>
               <th className="px-2 md:px-3 py-2 text-center text-xs font-semibold border border-cyan-500">Status</th>
               <th className="px-2 md:px-3 py-2 text-right text-xs font-semibold border border-cyan-500">Paid</th>
               <th className="px-2 md:px-3 py-2 text-right text-xs font-semibold border border-cyan-500">Due</th>
@@ -167,16 +166,13 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           <tbody>
             {filteredFamilies.length === 0 ? (
               <tr>
-                <td colSpan={!readOnly ? 6 : 5} className="px-2 md:px-3 py-2 text-center text-gray-500 text-xs border border-gray-200">No families found</td>
+                <td colSpan={!readOnly ? 5 : 4} className="px-2 md:px-3 py-2 text-center text-gray-500 text-xs border border-gray-200">No families found</td>
               </tr>
             ) : (
               filteredFamilies.map((family) => (
                 <tr key={family.id} className="odd:bg-white even:bg-gray-50 border-b border-gray-200">
                   <td className="px-2 md:px-3 py-2 text-xs font-medium text-gray-900 border border-gray-200">
                     {family.familyHeadName}
-                  </td>
-                  <td className="px-2 md:px-3 py-2 text-xs border border-gray-200">
-                    {formatCurrency(family.monthlyAmount)}
                   </td>
                   <td className="px-2 md:px-3 py-2 text-center border border-gray-200">
                     <span className={`inline-block px-1.5 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
@@ -224,10 +220,9 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
             <>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Family Head</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Member Name</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Monthly Amount</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Status</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Effective From</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Paid/Total</th>
+              
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount Paid</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount Due</th>
               {!readOnly && <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Actions</th>}
@@ -236,7 +231,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
         >
           {filteredFamilies.length === 0 ? (
             <tr>
-              <td colSpan="9" className="px-6 py-4 text-center text-gray-500">No families found</td>
+              <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No families found</td>
             </tr>
           ) : (
             filteredFamilies.map((family) => (
@@ -247,9 +242,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {family.memberName}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(family.monthlyAmount)}
-                </td>
+                
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                     family.isContributionEnabled
@@ -262,16 +255,11 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {family.effectiveFrom ? formatDate(family.effectiveFrom) : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={family.totalPaidMonths === 12 ? 'text-green-600 font-semibold' : 'text-gray-900'}>
-                    {family.totalPaidMonths || 0}/12
-                  </span>
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                  {formatCurrency(family.totalAmountPaid || 0)}
+                  {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                  {formatCurrency(family.totalAmountDue || 0)}
+                  {formatCurrency(family.totalDueAllTime || family.totalAmountDue || 0)}
                 </td>
                 {!readOnly && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

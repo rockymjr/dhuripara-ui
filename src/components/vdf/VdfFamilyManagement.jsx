@@ -170,16 +170,8 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
             </div>
             
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Monthly Amount:</span>
-                <span className="font-medium">{formatCurrency(family.monthlyAmount)}</span>
-              </div>
               {family.isContributionEnabled && (
                 <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Paid Months:</span>
-                    <span className="font-medium text-green-600">{family.totalPaidMonths}/12</span>
-                  </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Paid (All-time):</span>
                     <span className="font-medium text-green-600">
@@ -216,10 +208,9 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
             <>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Family Head</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Member Name</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Monthly Amount</th>
+              
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Status</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Effective From</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Paid/Total</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount Paid</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount Due</th>
               {!readOnly && <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Actions</th>}
@@ -239,9 +230,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                   {family.memberName}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(family.monthlyAmount)}
-                </td>
+                
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                     family.isContributionEnabled
@@ -253,11 +242,6 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {family.effectiveFrom ? formatDate(family.effectiveFrom) : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={family.totalPaidMonths === 12 ? 'text-green-600 font-semibold' : 'text-gray-900'}>
-                    {family.totalPaidMonths || 0}/12
-                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
                   {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
