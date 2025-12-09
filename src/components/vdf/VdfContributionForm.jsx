@@ -135,6 +135,15 @@ const VdfContributionForm = ({ family, year, onClose }) => {
     setSelectedExemptMonths([]);
   };
 
+  const handleClearAllAmounts = () => {
+    if (!window.confirm('Set all months to 0? This will delete all contributions for this year.')) return;
+    const contributions = {};
+    MONTHS.forEach(m => {
+      contributions[m.value] = '0';
+    });
+    setMonthlyContributions(contributions);
+  };
+
   const handlePayAll = () => {
     const amount = family?.monthlyAmount || 20;
     const contributions = {};
@@ -147,6 +156,7 @@ const VdfContributionForm = ({ family, year, onClose }) => {
   const validateForm = () => {
     const newErrors = {};
     let hasAnyValue = false;
+    let hasDeletion = false;
 
     MONTHS.forEach(month => {
       const amount = monthlyContributions[month.value];
@@ -156,19 +166,25 @@ const VdfContributionForm = ({ family, year, onClose }) => {
       if (isExempt) return;
       
       if (amount && amount.trim()) {
-        hasAnyValue = true;
-        if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        const numAmount = parseFloat(amount);
+        if (numAmount > 0) {
+          hasAnyValue = true;
+        } else if (numAmount === 0) {
+          hasDeletion = true; // Mark as having a deletion attempt
+        }
+        if (isNaN(numAmount)) {
           newErrors[month.value] = 'Invalid amount';
         }
       }
     });
 
-    if (!hasAnyValue && selectedExemptMonths.length === 0) {
-      newErrors.general = 'Please enter amount for at least one month or mark months as exempt';
+    // Allow if there are contributions OR deletions (zero values)
+    if (!hasAnyValue && !hasDeletion && selectedExemptMonths.length === 0) {
+      newErrors.general = 'Please enter amount for at least one month, mark months as exempt, or set amounts to 0 to delete';
     }
 
-    if (!paymentDate && selectedExemptMonths.length === 0) {
-      newErrors.paymentDate = 'Payment date is required when recording contributions';
+    if (!paymentDate && (hasAnyValue || hasDeletion)) {
+      newErrors.paymentDate = 'Payment date is required when recording or updating contributions';
     }
 
     setErrors(newErrors);
@@ -195,13 +211,14 @@ const VdfContributionForm = ({ family, year, onClose }) => {
     try {
       setLoading(true);
       
-      // Prepare contributions array - filter out exempted months
+      // Prepare contributions array - include ALL months with values (including 0 for deletion)
       const contributions = MONTHS
         .filter(month => {
           // Skip if marked as exempt
           if (selectedExemptMonths.includes(month.value)) return false;
-          // Only include if there's a value
-          return monthlyContributions[month.value] && monthlyContributions[month.value].trim();
+          // Include month if there's a value (including 0)
+          const val = monthlyContributions[month.value];
+          return val !== undefined && val !== null && val !== '';
         })
         .map(month => ({
           month: month.value,
@@ -209,15 +226,22 @@ const VdfContributionForm = ({ family, year, onClose }) => {
         }));
 
       if (contributions.length === 0) {
-        alert('Please enter at least one contribution amount');
+        alert('Please enter amounts for at least one month, or set to 0 to delete');
         setLoading(false);
         return;
+      }
+
+      // Check if this is only deletions (all zeros)
+      const hasNonZeroAmounts = contributions.some(c => c.amount > 0);
+      if (!hasNonZeroAmounts && !paymentDate) {
+        // For deletion-only operations, we might not need a payment date
+        // but let's require it to be consistent
       }
 
       const payload = {
         familyConfigId: family.familyConfigId || family.id,
         year: year,
-        paymentDate: paymentDate,
+        paymentDate: hasNonZeroAmounts ? paymentDate : new Date().toISOString().split('T')[0], // Use today if only deleting
         notes: notes || null,
         contributions: contributions
       };
@@ -225,7 +249,7 @@ const VdfContributionForm = ({ family, year, onClose }) => {
       console.log('Submitting contributions payload:', JSON.stringify(payload, null, 2));
       const response = await vdfService.recordBulkContributions(payload);
       console.log('Response from server:', response);
-      alert('Contributions saved successfully');
+      alert('Contributions updated successfully');
       onClose(true);
     } catch (error) {
       console.error('Full error object:', error);
@@ -239,7 +263,7 @@ const VdfContributionForm = ({ family, year, onClose }) => {
         data: error?.response?.data,
         message: errorMsg
       });
-      alert('Failed to save contributions: ' + errorMsg);
+      alert('Failed to update contributions: ' + errorMsg);
     } finally {
       setLoading(false);
     }
@@ -327,6 +351,14 @@ const VdfContributionForm = ({ family, year, onClose }) => {
               className="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-300 rounded hover:bg-gray-200 transition disabled:opacity-50"
             >
               Clear Exemptions
+            </button>
+            <button
+              type="button"
+              onClick={handleClearAllAmounts}
+              disabled={loading || loadingData}
+              className="px-2 py-1 bg-red-50 text-red-700 border border-red-200 rounded hover:bg-red-100 transition disabled:opacity-50"
+            >
+              Delete All Months
             </button>
           </div>
 
