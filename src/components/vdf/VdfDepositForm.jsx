@@ -8,18 +8,22 @@ import { X } from 'lucide-react';
 const VdfDepositForm = ({ deposit, onClose }) => {
   const [formData, setFormData] = useState({
     depositDate: deposit?.depositDate || new Date().toISOString().split('T')[0],
-    categoryId: deposit?.categoryId || '',
+    categoryId: deposit?.categoryId || deposit?.category?.id || '',
+    memberId: deposit?.memberId || '',
     amount: deposit?.amount?.toString() || '',
     notes: deposit?.notes || ''
   });
 
   const [categories, setCategories] = useState([]);
+  const [members, setMembers] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
+    fetchMembers();
   }, []);
 
   const fetchCategories = async () => {
@@ -32,6 +36,19 @@ const VdfDepositForm = ({ deposit, onClose }) => {
       console.error('Error fetching deposit categories:', error);
     } finally {
       setLoadingCategories(false);
+    }
+  };
+
+  const fetchMembers = async () => {
+    try {
+      setLoadingMembers(true);
+      const data = await vdfService.getMembers();
+      console.log('Fetched members:', data);
+      setMembers(Array.isArray(data) ? data : (data?.content || []));
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    } finally {
+      setLoadingMembers(false);
     }
   };
 
@@ -76,14 +93,11 @@ const VdfDepositForm = ({ deposit, onClose }) => {
 
     try {
       setLoading(true);
-      // For VDF deposits we don't collect sourceType/member/month in the form.
-      // Set a default sourceType and use the category name as sourceName so backend validation passes.
-      const selectedCategory = categories.find(c => c.id === formData.categoryId);
+      // For VDF deposits we don't collect sourceType/month in the form.
+      // Payload uses categoryId instead of sourceType now. Backend maps category via deposit_category_id.
       const payload = {
         depositDate: formData.depositDate,
-        sourceType: 'OTHER',
-        sourceName: selectedCategory?.categoryName || 'VDF Deposit',
-        memberId: null,
+        memberId: formData.memberId || null,
         categoryId: formData.categoryId,
         amount: parseFloat(formData.amount),
         notes: formData.notes || null
@@ -172,6 +186,31 @@ const VdfDepositForm = ({ deposit, onClose }) => {
             {errors.categoryId && (
               <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>
             )}
+          </div>
+
+          {/* Member (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Member (Optional)
+            </label>
+            <select
+              name="memberId"
+              value={formData.memberId}
+              onChange={handleChange}
+              disabled={loadingMembers}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                loadingMembers ? 'opacity-50' : ''
+              }`}
+            >
+              <option value="">
+                {loadingMembers ? 'Loading members...' : 'Select Member (Optional)'}
+              </option>
+              {members.map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.memberHeadName || member.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           

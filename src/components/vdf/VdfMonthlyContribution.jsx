@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import Loader from '../common/Loader';
 import VdfContributionForm from './VdfContributionForm';
-import { Calendar, CheckCircle, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, ChevronDown, ChevronRight, Edit, Search } from 'lucide-react';
 
 const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -22,6 +22,7 @@ const VdfMonthlyContribution = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingFamily, setEditingFamily] = useState(null);
   const [expandedFamily, setExpandedFamily] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchMatrix();
@@ -70,6 +71,12 @@ const VdfMonthlyContribution = () => {
     return years;
   };
 
+  const filteredFamilies = (matrix?.families || []).filter(family => {
+    if (!searchTerm) return true;
+    const search = searchTerm.toLowerCase();
+    return family.familyHeadName?.toLowerCase().includes(search);
+  });
+
   if (loading) return <Loader message="Loading contribution data..." />;
   
   if (!matrix || !matrix.families || matrix.families.length === 0) {
@@ -87,69 +94,139 @@ const VdfMonthlyContribution = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-teal-600" />
-          <h2 className="text-lg font-bold text-gray-800">Monthly Contributions</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Calendar size={32} className="text-teal-600 mr-3" />
+          <h2 className="text-2xl font-bold text-gray-800">Monthly Contributions</h2>
         </div>
-        
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-          className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
-        >
-          {generateYearOptions().map(year => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
+      </div>
+
+      {/* Filter and Search Section */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by family head name..."
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            />
+            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+          </div>
+
+          {/* Year Selector */}
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+          >
+            {generateYearOptions().map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Contribution Form Modal */}
       {showForm && <VdfContributionForm family={editingFamily} year={selectedYear} onClose={handleFormClose} />}
 
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-4 text-white">
+          <h3 className="text-sm font-medium opacity-90">Total Families</h3>
+          <p className="text-3xl font-bold mt-2">{filteredFamilies.length}</p>
+        </div>
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
+          <h3 className="text-sm font-medium opacity-90">Total Paid (All-time)</h3>
+          <p className="text-2xl font-bold mt-2">
+            {formatCurrency(
+              filteredFamilies.reduce((sum, f) => sum + (f.totalPaidAllTime || 0), 0)
+            )}
+          </p>
+        </div>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
+          <h3 className="text-sm font-medium opacity-90">Total Due (All-time)</h3>
+          <p className="text-2xl font-bold mt-2">
+            {formatCurrency(
+              filteredFamilies.reduce((sum, f) => sum + (f.totalDueAllTime || 0), 0)
+            )}
+          </p>
+        </div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-4 text-white">
+          <h3 className="text-sm font-medium opacity-90">{selectedYear} Paid</h3>
+          <p className="text-2xl font-bold mt-2">
+            {formatCurrency(
+              filteredFamilies.reduce((sum, f) => sum + (f.totalPaid || 0), 0)
+            )}
+          </p>
+        </div>
+      </div>
+
       {/* Family List with Collapsible Months - Table Format */}
       <div className="space-y-2">
-        {matrix.families.map((family) => (
+        {filteredFamilies.map((family) => (
           <div key={family.familyConfigId} className="bg-white rounded-lg shadow overflow-hidden">
-            {/* Family Header - Always Visible */}
+            {/* Family Header - Table Row Format */}
             <div 
               onClick={() => setExpandedFamily(expandedFamily === family.familyConfigId ? null : family.familyConfigId)}
-              className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50 transition border-b border-gray-200"
+              className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-gray-50 transition border-b border-gray-200"
             >
-              <div className="flex items-center space-x-2 flex-1 min-w-0">
+              {/* Family Name Column */}
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
                 {expandedFamily === family.familyConfigId ? (
-                  <ChevronDown size={18} className="text-teal-600 flex-shrink-0" />
+                  <ChevronDown size={20} className="text-teal-600 flex-shrink-0" />
                 ) : (
-                  <ChevronRight size={18} className="text-gray-400 flex-shrink-0" />
+                  <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
                 )}
-                <h3 className="font-semibold text-gray-900 text-sm truncate">{family.familyHeadName}</h3>
+                <h3 className="font-semibold text-gray-900 truncate">{family.familyHeadName}</h3>
               </div>
 
-              {/* Summary on Right */}
-              <div className="flex items-center space-x-3 text-xs flex-shrink-0">
-                <div className="text-right">
-                  <p className="text-gray-600">Paid</p>
-                  <p className="font-semibold text-green-600">{formatCurrency(family.totalPaidAllTime || family.totalPaid || 0)}</p>
-                  {(family.totalPaidAllTime && family.totalPaid) && (family.totalPaidAllTime !== family.totalPaid) && (
-                    <div className="text-xxs text-gray-500">(This year: {formatCurrency(family.totalPaid || 0)})</div>
-                  )}
+              {/* Summary Columns - 4 columns: Total Paid, Total Due, This Year Paid, Edit Button */}
+              <div className="flex items-center gap-8 text-sm flex-shrink-0 ml-4">
+                {/* Column 1: Total Paid (All-time) */}
+                <div className="text-right w-32">
+                  <p className="text-gray-500 text-xs mb-1 font-medium">Total Paid</p>
+                  <p className="font-semibold text-green-600">{formatCurrency(family.totalPaidAllTime || 0)}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-gray-600">Due</p>
-                  <p className="font-semibold text-red-600">{formatCurrency(family.totalDueAllTime || family.totalDue || 0)}</p>
-                  {(family.totalDueAllTime && family.totalDue) && (family.totalDueAllTime !== family.totalDue) && (
-                    <div className="text-xxs text-gray-500">(This year: {formatCurrency(family.totalDue || 0)})</div>
-                  )}
+
+                {/* Column 2: Total Due (All-time) */}
+                <div className="text-right w-32">
+                  <p className="text-gray-500 text-xs mb-1 font-medium">Total Due</p>
+                  <p className="font-semibold text-red-600">{formatCurrency(family.totalDueAllTime || 0)}</p>
                 </div>
+
+                {/* Column 3: This Year Paid */}
+                <div className="text-right w-32">
+                  <p className="text-gray-500 text-xs mb-1 font-medium">{selectedYear} Paid</p>
+                  <p className="font-semibold text-purple-600">{formatCurrency(family.totalPaid || 0)}</p>
+                </div>
+
+                {/* Column 4: Edit Button (Admin only) */}
+                {isAdmin && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditFamily(family);
+                    }}
+                    className="text-teal-600 hover:text-teal-900 font-medium text-sm flex items-center space-x-1 whitespace-nowrap"
+                    title="Edit"
+                  >
+                    <Edit size={16} />
+                    <span>Edit</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Expanded Content - Months Details */}
+            {/* Expanded Content - Months Details Grid */}
             {expandedFamily === family.familyConfigId && (
-              <div className="bg-gray-50 p-3">
-                <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="bg-gray-50 p-6 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-700 mb-4">Monthly Details - {selectedYear}</h4>
+                <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-6 gap-3">
                   {MONTHS.map((month, idx) => {
                     const monthIndex = idx + 1;
                     const monText = `${selectedYear}-${String(monthIndex).padStart(2,'0')}`;
@@ -174,9 +251,9 @@ const VdfMonthlyContribution = () => {
 
                       try {
                         if (!isExempted) {
-                          await vdfService.createFamilyExemption({ familyId: family.familyConfigId || family.familyConfigId || family.familyId || family.family_id, monthYear: monText, reason: 'Marked exempt via UI' });
+                          await vdfService.createFamilyExemption({ familyId: family.familyConfigId || family.familyId || family.family_id, monthYear: monText, reason: 'Marked exempt via UI' });
                         } else {
-                          await vdfService.deleteFamilyExemption(family.familyConfigId || family.familyConfigId || family.familyId || family.family_id, monText);
+                          await vdfService.deleteFamilyExemption(family.familyConfigId || family.familyId || family.family_id, monText);
                         }
                         await fetchMatrix();
                       } catch (err) {
@@ -186,46 +263,45 @@ const VdfMonthlyContribution = () => {
                     };
 
                     return (
-                      <div key={idx} className="bg-white p-2 rounded border border-gray-200 text-center text-xs">
-                        <div className="font-medium text-gray-700 mb-1">{month}</div>
+                      <div key={idx} className="bg-white p-3 rounded border border-gray-200 text-center hover:shadow-md transition">
+                        <div className="font-medium text-gray-700 mb-2 text-sm">{month}</div>
                         {isPaid ? (
-                          <CheckCircle size={14} className="text-green-600 mx-auto mb-1" />
+                          <CheckCircle size={16} className="text-green-600 mx-auto mb-2" />
                         ) : isExempted ? (
-                          <Calendar size={14} className="text-blue-500 mx-auto mb-1" />
+                          <Calendar size={16} className="text-blue-500 mx-auto mb-2" />
                         ) : (
-                          <XCircle size={14} className="text-gray-300 mx-auto mb-1" />
+                          <XCircle size={16} className="text-gray-300 mx-auto mb-2" />
                         )}
 
-                        <span className={`font-semibold block ${isPaid ? 'text-green-600' : isExempted ? 'text-blue-600' : 'text-gray-500'}`}>
+                        <span className={`font-semibold block text-xs mb-2 ${isPaid ? 'text-green-600' : isExempted ? 'text-blue-600' : 'text-gray-500'}`}>
                           {isExempted ? 'Exempt' : formatCurrency(monthPaid)}
                         </span>
 
                         {isAdmin && (
                           <button
                             onClick={handleToggleExempt}
-                            className={`mt-2 text-xs px-2 py-0.5 rounded ${isExempted ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-teal-50 text-teal-600 border border-teal-100'}`}
+                            className={`text-xs px-2 py-1 rounded font-medium transition ${isExempted ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-100' : 'bg-teal-50 text-teal-600 border border-teal-100 hover:bg-teal-100'}`}
                           >
-                            {isExempted ? 'Undo Exempt' : 'Mark Exempt'}
+                            {isExempted ? 'Undo' : 'Exempt'}
                           </button>
                         )}
                       </div>
                     );
                   })}
                 </div>
-
-                {/* Edit Button for Collapsible View */}
-                {isAdmin && (
-                  <button
-                    onClick={() => handleEditFamily(family)}
-                    className="w-full mt-2 px-3 py-1 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium text-xs"
-                  >
-                    Edit
-                  </button>
-                )}
               </div>
             )}
           </div>
         ))}
+
+        {/* No Results Message */}
+        {filteredFamilies.length === 0 && (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Search size={48} className="mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg">No families found</p>
+            <p className="text-gray-400 text-sm mt-2">Try adjusting your search criteria</p>
+          </div>
+        )}
       </div>
     </div>
   );
