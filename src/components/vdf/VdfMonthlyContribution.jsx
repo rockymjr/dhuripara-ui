@@ -74,7 +74,8 @@ const VdfMonthlyContribution = () => {
   const filteredFamilies = (matrix?.families || []).filter(family => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
-    return family.familyHeadName?.toLowerCase().includes(search);
+    const display = (family.memberName || family.familyHeadName || '').toLowerCase();
+    return display.includes(search);
   });
 
   if (loading) return <Loader message="Loading contribution data..." />;
@@ -182,7 +183,7 @@ const VdfMonthlyContribution = () => {
                 ) : (
                   <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
                 )}
-                <h3 className="font-semibold text-gray-900 truncate">{family.familyHeadName}</h3>
+                <h3 className="font-semibold text-gray-900 truncate">{family.memberName || family.familyHeadName}</h3>
               </div>
 
               {/* Summary Columns - 4 columns: Total Paid, Total Due, This Year Paid, Edit Button */}
@@ -244,9 +245,10 @@ const VdfMonthlyContribution = () => {
 
                     const handleToggleExempt = async () => {
                       if (!isAdmin) return;
+                      const displayName = family.memberName || family.familyHeadName;
                       const confirmMsg = isExempted
-                        ? `Remove exemption for ${family.familyHeadName} - ${monText}?`
-                        : `Mark ${family.familyHeadName} as exempt for ${monText}?`;
+                        ? `Remove exemption for ${displayName} - ${monText}?`
+                        : `Mark ${displayName} as exempt for ${monText}?`;
                       if (!window.confirm(confirmMsg)) return;
 
                       try {

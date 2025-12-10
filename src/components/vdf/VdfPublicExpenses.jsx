@@ -10,7 +10,7 @@ import { Package, Plus, Edit, Trash2, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const VdfPublicExpenses = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated: isAdmin } = useAuth();
@@ -82,10 +82,11 @@ const VdfPublicExpenses = () => {
   // Calculate expenses by category
   const expensesByCategory = {};
   expenses.forEach(e => {
-    if (!expensesByCategory[e.categoryName]) {
-      expensesByCategory[e.categoryName] = 0;
+    const catKey = language === 'bn' ? (e.categoryNameBn || e.categoryName) : (e.categoryName || e.categoryNameBn);
+    if (!expensesByCategory[catKey]) {
+      expensesByCategory[catKey] = 0;
     }
-    expensesByCategory[e.categoryName] += e.amount;
+    expensesByCategory[catKey] += e.amount;
   });
 
   const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -182,11 +183,11 @@ const VdfPublicExpenses = () => {
                     <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
                     <td className="px-3 py-2">
                       <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
-                        {expense.categoryName}
+                        {language === 'bn' ? (expense.categoryNameBn || expense.categoryName) : (expense.categoryName || expense.categoryNameBn)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
-                      {expense.description || '-'}
+                      {language === 'bn' ? (expense.descriptionBn || expense.description || '-') : (expense.description || '-')}
                     </td>
                     <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
                       {formatCurrency(expense.amount)}

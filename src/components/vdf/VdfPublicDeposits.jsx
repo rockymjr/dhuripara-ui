@@ -5,6 +5,7 @@ import { adminService } from '../../services/adminService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Plus, Edit, Trash2, Filter } from 'lucide-react';
 import Loader from '../common/Loader';
@@ -20,6 +21,7 @@ const VdfPublicDeposits = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState(null);
   const { isAuthenticated: isAdmin } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const currentYear = new Date().getFullYear();
@@ -142,6 +144,25 @@ const VdfPublicDeposits = () => {
     const memberMatch = selectedMember === 'all' || (d.memberId && d.memberId === selectedMember);
     return catMatch && memberMatch;
   });
+
+  // Helper to get member display name depending on selected language and available fields
+  const getMemberDisplayName = (member) => {
+    if (!member) return '-';
+    // Prefer explicit Bengali fields if language is set to bn
+    if (language === 'bn') {
+      const bnFirst = member.firstNameBn || member.first_name_bn || member.nameBn || member.name_bn || member.bengaliName || member.bnName;
+      const bnLast = member.lastNameBn || member.last_name_bn || '';
+      const bnFull = [bnFirst, bnLast].filter(Boolean).join(' ').trim();
+      if (bnFull) return bnFull;
+    }
+    // Fallback to common English fields
+    const first = member.firstName || member.first_name || member.first || '';
+    const last = member.lastName || member.last_name || member.last || '';
+    const full = `${first} ${last}`.trim();
+    if (full) return full;
+    // Some APIs may expose a single `name` field
+    return member.name || member.memberName || member.member_name || '-';
+  };
 
   // Use backend total when available else fall back to client calculation
   const totalDeposits = backendTotal || filteredDeposits.reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -266,7 +287,7 @@ const VdfPublicDeposits = () => {
               {members.length > 0 ? (
                 members.map(member => {
                   const count = deposits.filter(d => (d.memberId && d.memberId === member.id) || (d.member && d.member.id === member.id)).length;
-                  const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim();
+                  const memberName = getMemberDisplayName(member);
                   return (
                     <option key={member.id} value={member.id}>
                       {memberName} ({count})
@@ -325,14 +346,17 @@ const VdfPublicDeposits = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        {deposit.categoryName || deposit.category?.categoryName || '-'}
+                        {language === 'bn'
+                          ? (deposit.categoryNameBn || deposit.category?.categoryNameBn || deposit.categoryName || deposit.category?.categoryName || '-')
+                          : (deposit.categoryName || deposit.category?.categoryName || '-')
+                        }
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-xs sm:text-sm">
-                      {deposit.member ? `${deposit.member.firstName || ''} ${deposit.member.lastName || ''}`.trim() : '-'}
+                      {deposit.member ? getMemberDisplayName(deposit.member) : '-'}
                     </td>
                     <td className="px-4 py-3 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
-                      {deposit.sourceName || '-'}
+                      {language === 'bn' ? (deposit.sourceNameBn || deposit.sourceName || '-') : (deposit.sourceName || '-')}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-green-600 whitespace-nowrap text-xs sm:text-sm">
                       {formatCurrency(deposit.amount)}
