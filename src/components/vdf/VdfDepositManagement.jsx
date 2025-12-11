@@ -1,6 +1,7 @@
 // src/components/vdf/VdfDepositManagement.jsx
 import React, { useEffect, useState } from 'react';
 import { vdfService } from "../../services/vdfService";
+import { useLanguage } from '../../context/LanguageContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { TrendingUp, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,6 +10,7 @@ import VdfDepositForm from './VdfDepositForm';
 import { useAuth } from '../../context/AuthContext';
 
 const VdfDepositManagement = () => {
+  const { t } = useLanguage();
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -88,14 +90,14 @@ const VdfDepositManagement = () => {
   });
 
   console.log('Rendering VdfDepositManagement - loading:', loading, 'deposits:', deposits);
-  if (loading) return <Loader message="Loading deposits..." />;
+  if (loading) return <Loader message={t('loadingDeposits')} />;
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-3 md:mb-6 gap-2">
         <div className="flex items-center gap-2">
           <TrendingUp size={24} className="text-green-600" />
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">Deposits</h2>
+          <h2 className="text-lg md:text-xl font-bold text-gray-800">{t('vdfDeposits')}</h2>
         </div>
         <div className="flex items-center gap-2">
           {/* Year Filter */}
@@ -117,7 +119,7 @@ const VdfDepositManagement = () => {
               className="bg-green-600 hover:bg-green-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-lg flex items-center space-x-1 transition text-sm md:text-base"
             >
               <Plus size={16} />
-              <span className="hidden sm:inline">Add</span>
+              <span className="hidden sm:inline">{t('add')}</span>
             </button>
           )}
         </div>
@@ -138,7 +140,7 @@ const VdfDepositManagement = () => {
       {/* Deposit by Type - Table Format */}
       {Object.keys(depositsByType).length > 0 && (
         <div className="bg-white rounded-lg shadow p-3 md:p-4 mb-3 md:mb-6 overflow-x-auto">
-          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3">Deposits by Category</h3>
+          <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3">{t('vdfDeposits')} by {t('category')}</h3>
           <table className="w-full text-xs md:text-sm">
             <thead>
               <tr className="border-b-2 border-green-300">
@@ -162,7 +164,7 @@ const VdfDepositManagement = () => {
       <div className="block lg:hidden space-y-3">
         {filteredDeposits.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500 text-sm">
-            No deposits found for selected filters
+            {t('noDepositsFound')}
           </div>
         ) : (
           filteredDeposits.map((deposit) => (
@@ -222,7 +224,7 @@ const VdfDepositManagement = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredDeposits.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-3 py-4 text-center text-gray-500">No deposits found for selected filters</td>
+                    <td colSpan="6" className="px-3 py-4 text-center text-gray-500">{t('noDepositsFound')}</td>
                   </tr>
                 ) : (
                   filteredDeposits.map((deposit) => (

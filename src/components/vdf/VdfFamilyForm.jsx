@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { vdfService } from "../../services/vdfService"
 import { adminService } from '../../services/adminService';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDateForInput } from '../../utils/dateFormatter';
 import { X } from 'lucide-react';
 
 const VdfFamilyForm = ({ family, onClose }) => {
+  const { t } = useLanguage();
   const [members, setMembers] = useState([]);
   const [formData, setFormData] = useState({
     memberId: '',
@@ -42,7 +44,7 @@ const VdfFamilyForm = ({ family, onClose }) => {
       setMembers(data);
     } catch (error) {
       console.error('Error fetching members:', error);
-      alert('Failed to load members');
+      alert(t('errorFetching'));
     } finally {
       setLoadingMembers(false);
     }
@@ -132,10 +134,10 @@ const VdfFamilyForm = ({ family, onClose }) => {
 
       if (family) {
         await vdfService.updateFamilyConfig(family.id, payload);
-        alert('Family configuration updated successfully');
+        alert(t('updated'));
       } else {
         await vdfService.createFamilyConfig(payload);
-        alert('Family configuration created successfully');
+        alert(t('created'));
       }
       onClose(true);
     } catch (error) {
@@ -152,7 +154,7 @@ const VdfFamilyForm = ({ family, onClose }) => {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8">
         <div className="flex justify-between items-center p-6 border-b">
           <h3 className="text-xl font-bold text-gray-800">
-            {family ? 'Edit Family Configuration' : 'Add Family to VDF'}
+            {family ? t('editFamily') : t('addFamily')}
           </h3>
           <button
             onClick={() => onClose(false)}
@@ -169,7 +171,7 @@ const VdfFamilyForm = ({ family, onClose }) => {
               Select Member (Head of Family) <span className="text-red-500">*</span>
             </label>
             {loadingMembers ? (
-              <p className="text-sm text-gray-500">Loading members...</p>
+              <p className="text-sm text-gray-500">{t('loading')}</p>
             ) : (
               <select
                 name="memberId"
@@ -192,7 +194,7 @@ const VdfFamilyForm = ({ family, onClose }) => {
               <p className="text-red-500 text-xs mt-1">{errors.memberId}</p>
             )}
             {family && (
-              <p className="text-xs text-gray-500 mt-1">Member cannot be changed after creation</p>
+              <p className="text-xs text-gray-500 mt-1">{t('required')}</p>
             )}
           </div>
 

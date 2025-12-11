@@ -8,16 +8,16 @@ import Loader from '../common/Loader';
 import VdfContributionForm from './VdfContributionForm';
 import { Calendar, CheckCircle, XCircle, ChevronDown, ChevronRight, Edit, Search } from 'lucide-react';
 
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
 const VdfMonthlyContribution = () => {
   const { t } = useLanguage();
   const { isAuthenticated: isAdmin } = useAuth();
   const [matrix, setMatrix] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  const MONTHS = [
+    t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'),
+    t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')
+  ];
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showForm, setShowForm] = useState(false);
   const [editingFamily, setEditingFamily] = useState(null);
@@ -38,7 +38,7 @@ const VdfMonthlyContribution = () => {
 
   const handleEditFamily = (family) => {
     if (!isAdmin) {
-      alert('Only admins can edit contributions');
+      alert(t('adminOnly'));
       return;
     }
     setEditingFamily({ ...family, year: selectedYear });
@@ -56,7 +56,7 @@ const VdfMonthlyContribution = () => {
       setMatrix({ families });
     } catch (error) {
       console.error('Error fetching contribution matrix:', error);
-      alert('Failed to load contribution data: ' + error.message);
+      alert(t('errorFetching'));
     } finally {
       setLoading(false);
     }
@@ -78,14 +78,14 @@ const VdfMonthlyContribution = () => {
     return display.includes(search);
   });
 
-  if (loading) return <Loader message="Loading contribution data..." />;
+  if (loading) return <Loader message={t('loadingData')} />;
   
   if (!matrix || !matrix.families || matrix.families.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500 text-lg">No contribution data available</p>
+          <p className="text-gray-500 text-lg">{t('noContributionData')}</p>
           <p className="text-gray-400 text-sm mt-2">
             The backend endpoint /public/vdf/contributions/monthly-matrix may not be implemented yet.
           </p>
@@ -100,7 +100,7 @@ const VdfMonthlyContribution = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Calendar size={32} className="text-teal-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-800">Monthly Contributions</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t('monthlyContributions')}</h2>
         </div>
       </div>
 
@@ -113,7 +113,7 @@ const VdfMonthlyContribution = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by family head name..."
+              placeholder={t('searchByFamilyHeadName')}
               className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             />
             <Search className="absolute left-3 top-3 text-gray-400" size={20} />
@@ -138,11 +138,11 @@ const VdfMonthlyContribution = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Families</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalFamilies')}</h3>
           <p className="text-3xl font-bold mt-2">{filteredFamilies.length}</p>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Paid (All-time)</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalPaid')} (All-time)</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
               filteredFamilies.reduce((sum, f) => sum + (f.totalPaidAllTime || 0), 0)
@@ -150,7 +150,7 @@ const VdfMonthlyContribution = () => {
           </p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Due (All-time)</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalDues')}</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
               filteredFamilies.reduce((sum, f) => sum + (f.totalDueAllTime || 0), 0)
@@ -158,7 +158,7 @@ const VdfMonthlyContribution = () => {
           </p>
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">{selectedYear} Paid</h3>
+          <h3 className="text-sm font-medium opacity-90">{selectedYear} {t('totalPaid')}</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
               filteredFamilies.reduce((sum, f) => sum + (f.totalPaid || 0), 0)
@@ -260,7 +260,7 @@ const VdfMonthlyContribution = () => {
                         await fetchMatrix();
                       } catch (err) {
                         console.error('Error toggling exemption:', err);
-                        alert('Failed to update exemption: ' + (err?.message || err));
+                        alert(t('error') + ': ' + (err?.message || err));
                       }
                     };
 

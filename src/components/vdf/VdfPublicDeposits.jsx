@@ -21,7 +21,7 @@ const VdfPublicDeposits = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState(null);
   const { isAuthenticated: isAdmin } = useAuth();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const currentYear = new Date().getFullYear();
@@ -89,7 +89,7 @@ const VdfPublicDeposits = () => {
       setSelectedCategory('all');
     } catch (error) {
       console.error('Error fetching deposits:', error);
-      alert('Failed to load deposits');
+      alert(t('errorFetching'));
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ const VdfPublicDeposits = () => {
 
   const handleAddNew = () => {
     if (!isAdmin) {
-      alert('Only admins can add deposits');
+      alert(t('adminOnly'));
       navigate('/admin/login');
       return;
     }
@@ -115,7 +115,7 @@ const VdfPublicDeposits = () => {
 
   const handleEdit = (deposit) => {
     if (!isAdmin) {
-      alert('Only admins can edit deposits');
+      alert(t('adminOnly'));
       return;
     }
     setEditingDeposit(deposit);
@@ -123,18 +123,18 @@ const VdfPublicDeposits = () => {
   };
 
   const handleDelete = async (depositId) => {
-    if (!window.confirm('Are you sure you want to delete this deposit?')) return;
+    if (!window.confirm(t('confirmDelete'))) return;
     try {
       await vdfService.deleteDeposit(depositId);
-      alert('Deposit deleted successfully');
+      alert(t('deleted'));
       fetchDeposits();
     } catch (error) {
       console.error('Error deleting deposit:', error);
-      alert('Failed to delete deposit');
+      alert(t('errorDeleting'));
     }
   };
 
-  if (loading) return <Loader message="Loading deposits..." />;
+  if (loading) return <Loader message={t('loadingDeposits')} />;
 
   // Filter deposits by selected category and member
   const filteredDeposits = deposits.filter(d => {
@@ -188,7 +188,7 @@ const VdfPublicDeposits = () => {
       <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <TrendingUp size={24} className="text-green-600" />
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800">Deposits</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">{t('vdfDeposits')}</h2>
         </div>
         {isAdmin && (
           <button
@@ -196,7 +196,7 @@ const VdfPublicDeposits = () => {
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-1 transition"
           >
             <Plus size={18} />
-            <span className="hidden sm:inline">Add Deposit</span>
+            <span className="hidden sm:inline">{t('addDeposit')}</span>
           </button>
         )}
       </div>
@@ -335,7 +335,7 @@ const VdfPublicDeposits = () => {
               {filteredDeposits.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-4 py-4 text-center text-gray-500">
-                    No deposits found
+                    {t('noDepositsFound')}
                   </td>
                 </tr>
               ) : (

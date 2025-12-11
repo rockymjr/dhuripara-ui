@@ -59,14 +59,14 @@ const VdfPublicExpenses = () => {
   };
 
   const handleDelete = async (expenseId) => {
-    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+    if (!window.confirm(t('confirmDelete'))) return;
     try {
       await vdfService.deleteExpense(expenseId);
-      alert('Expense deleted successfully');
+      alert(t('deleted'));
       fetchExpenses();
     } catch (error) {
       console.error('Error deleting expense:', error);
-      alert('Failed to delete expense');
+      alert(t('errorDeleting'));
     }
   };
 
@@ -75,7 +75,7 @@ const VdfPublicExpenses = () => {
     setShowForm(true);
   };
 
-  if (loading) return <Loader message="Loading VDF expenses..." />;
+  if (loading) return <Loader message={t('loadingExpenses')} />;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   
@@ -97,7 +97,7 @@ const VdfPublicExpenses = () => {
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Package size={20} className="text-orange-600" />
-          <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t('vdfExpenses')}</h2>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <select
@@ -115,7 +115,7 @@ const VdfPublicExpenses = () => {
               className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg flex items-center space-x-1 transition text-sm"
             >
               <Plus size={16} />
-              <span className="hidden sm:inline">Add</span>
+              <span className="hidden sm:inline">{t('add')}</span>
             </button>
           )}
         </div>
@@ -133,7 +133,7 @@ const VdfPublicExpenses = () => {
       {Object.keys(expensesByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow mb-4 overflow-hidden">
           <div className="px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-semibold">
-            By Category
+            By {t('category')}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -174,7 +174,7 @@ const VdfPublicExpenses = () => {
               {expenses.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-3 py-3 text-center text-gray-500">
-                    No expenses found
+                    {t('noExpensesFound')}
                   </td>
                 </tr>
               ) : (

@@ -1,6 +1,7 @@
 // src/components/admin/vdf/VdfExpenseManagement.jsx
 import React, { useEffect, useState } from 'react';
 import { vdfService } from "../../services/vdfService";
+import { useLanguage } from '../../context/LanguageContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { Package, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Filter, Info } from 'lucide-react';
@@ -10,6 +11,7 @@ import VdfExpenseForm from './VdfExpenseForm';
 import { useAuth } from '../../context/AuthContext';
 
 const VdfExpenseManagement = () => {
+  const { t } = useLanguage();
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ const VdfExpenseManagement = () => {
       setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('Error fetching expenses:', error);
-      alert('Failed to load expenses');
+      alert(t('errorFetching'));
     } finally {
       setLoading(false);
     }
@@ -75,14 +77,14 @@ const VdfExpenseManagement = () => {
   };
 
   const handleDelete = async (expenseId) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
+    if (window.confirm(t('confirmDelete'))) {
       try {
         await vdfService.deleteExpense(expenseId);
         fetchExpenses();
-        alert('Expense deleted successfully');
+        alert(t('deleted'));
       } catch (error) {
         console.error('Error deleting expense:', error);
-        alert('Failed to delete expense');
+        alert(t('errorDeleting'));
       }
     }
   };
@@ -103,7 +105,7 @@ const VdfExpenseManagement = () => {
   })).filter(item => item.total > 0);
 
   console.log('Rendering VdfExpenseManagement - loading:', loading, 'expenses:', expenses);
-  if (loading) return <Loader message="Loading expenses..." />;
+  if (loading) return <Loader message={t('loadingExpenses')} />;
 
   return (
     <div className="w-full">
@@ -111,7 +113,7 @@ const VdfExpenseManagement = () => {
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <Package size={20} className="text-orange-600" />
-          <h2 className="text-lg font-bold text-gray-800">Expenses</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t('vdfExpenses')}</h2>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <select
@@ -129,7 +131,7 @@ const VdfExpenseManagement = () => {
               className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg flex items-center space-x-1 transition text-sm"
             >
               <Plus size={16} />
-              <span className="hidden sm:inline">Add</span>
+              <span className="hidden sm:inline">{t('add')}</span>
             </button>
           )}
         </div>
@@ -188,7 +190,7 @@ const VdfExpenseManagement = () => {
               {filteredExpenses.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 6 : 5} className="px-3 py-3 text-center text-gray-500">
-                    No expenses found
+                    {t('noExpensesFound')}
                   </td>
                 </tr>
               ) : (

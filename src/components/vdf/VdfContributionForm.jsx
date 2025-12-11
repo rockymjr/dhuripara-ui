@@ -1,24 +1,25 @@
 // src/components/vdf/VdfContributionForm.jsx
 import React, { useState, useEffect } from 'react';
 import { vdfService } from '../../services/vdfService';
+import { useLanguage } from '../../context/LanguageContext';
 import { X } from 'lucide-react';
 
-const MONTHS = [
-  { value: 1, label: 'January' },
-  { value: 2, label: 'February' },
-  { value: 3, label: 'March' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'May' },
-  { value: 6, label: 'June' },
-  { value: 7, label: 'July' },
-  { value: 8, label: 'August' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'October' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'December' }
-];
-
 const VdfContributionForm = ({ family, year, onClose }) => {
+  const { t } = useLanguage();
+  const MONTHS = [
+    { value: 1, label: t('jan') },
+    { value: 2, label: t('feb') },
+    { value: 3, label: t('mar') },
+    { value: 4, label: t('apr') },
+    { value: 5, label: t('may') },
+    { value: 6, label: t('jun') },
+    { value: 7, label: t('jul') },
+    { value: 8, label: t('aug') },
+    { value: 9, label: t('sep') },
+    { value: 10, label: t('oct') },
+    { value: 11, label: t('nov') },
+    { value: 12, label: t('dec') }
+  ];
   const [monthlyContributions, setMonthlyContributions] = useState({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -76,11 +77,11 @@ const VdfContributionForm = ({ family, year, onClose }) => {
   const handleMarkExempt = async () => {
     if (!family) return;
     if (!selectedExemptMonths || selectedExemptMonths.length === 0) {
-      alert('Please select one or more months to mark exempt');
+      alert(t('required'));
       return;
     }
 
-    const confirmMsg = `Mark selected months as exempt for ${family.familyHeadName}?`;
+    const confirmMsg = t('confirmDelete');
     if (!window.confirm(confirmMsg)) return;
 
     try {
@@ -90,7 +91,7 @@ const VdfContributionForm = ({ family, year, onClose }) => {
         return vdfService.createFamilyExemption({ familyId: family.familyConfigId, monthYear, reason: notes || 'Marked exempt via UI' });
       });
       await Promise.all(promises);
-      alert('Selected months marked as exempt');
+      alert(t('updated'));
       onClose(true);
     } catch (err) {
       console.error('Error marking exemptions:', err);

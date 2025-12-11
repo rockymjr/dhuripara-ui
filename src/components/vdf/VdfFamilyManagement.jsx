@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { vdfService } from '../../../services/vdfService';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/dateFormatter';
+import { useLanguage } from '../../../context/LanguageContext';
 import { Users, Plus, Edit, Search } from 'lucide-react';
 import Loader from '../../common/Loader';
 import StyledTable from '../../common/StyledTable';
 import VdfFamilyForm from './VdfFamilyForm';
 
 const VdfFamilyManagement = ({ readOnly = false }) => {
+  const { t } = useLanguage();
   const [families, setFamilies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,7 +29,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
       setFamilies(data);
     } catch (error) {
       console.error('Error fetching families:', error);
-      alert('Failed to load families');
+      alert(t('errorFetching'));
     } finally {
       setLoading(false);
     }
@@ -60,14 +62,14 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
     );
   });
 
-  if (loading) return <Loader message="Loading families..." />;
+  if (loading) return <Loader message={t('loadingFamilies')} />;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Users size={32} className="text-cyan-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-800">VDF Family Management</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t('vdfFamilyManagement')}</h2>
         </div>
         {!readOnly && (
           <button
@@ -75,7 +77,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
             className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
           >
             <Plus size={20} />
-            <span>Add Family</span>
+            <span>{t('addFamily')}</span>
           </button>
         )}
       </div>
@@ -93,7 +95,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              All Families
+              {t('allFamilies')}
             </button>
             <button
               onClick={() => setFilterActive('active')}
@@ -103,7 +105,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              Active Contributors
+              {t('activeContributors')}
             </button>
           </div>
 
@@ -113,7 +115,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by family head or member name..."
+              placeholder={t('searchByFamilyHead')}
               className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
             <Search className="absolute left-3 top-3 text-gray-400" size={20} />
@@ -124,17 +126,17 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Families</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalFamilies')}</h3>
           <p className="text-3xl font-bold mt-2">{families.length}</p>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Active Contributors</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('activeContributors')}</h3>
           <p className="text-3xl font-bold mt-2">
             {families.filter(f => f.isContributionEnabled).length}
           </p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Collected (All-time)</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalCollected')}</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
               families.reduce((sum, f) => sum + (f.totalPaidAllTime || f.totalAmountPaid || 0), 0)
@@ -142,7 +144,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
           </p>
         </div>
         <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow p-4 text-white">
-          <h3 className="text-sm font-medium opacity-90">Total Dues (All-time)</h3>
+          <h3 className="text-sm font-medium opacity-90">{t('totalDues')}</h3>
           <p className="text-2xl font-bold mt-2">
             {formatCurrency(
               families.reduce((sum, f) => sum + (f.totalDueAllTime || f.totalAmountDue || 0), 0)
@@ -165,7 +167,7 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
                   ? 'bg-green-100 text-green-800'
                   : 'bg-gray-100 text-gray-800'
               }`}>
-                {family.isContributionEnabled ? 'Active' : 'Inactive'}
+                {family.isContributionEnabled ? t('active') : t('inactive')}
               </span>
             </div>
             
@@ -173,13 +175,13 @@ const VdfFamilyManagement = ({ readOnly = false }) => {
               {family.isContributionEnabled && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Paid (All-time):</span>
+                    <span className="text-gray-600">{t('totalPaid')} (All-time):</span>
                     <span className="font-medium text-green-600">
                       {formatCurrency(family.totalPaidAllTime || family.totalAmountPaid || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Due (All-time):</span>
+                    <span className="text-gray-600">{t('totalDue')} (All-time):</span>
                     <span className="font-medium text-red-600">
                       {formatCurrency(family.totalDueAllTime || family.totalAmountDue || 0)}
                     </span>

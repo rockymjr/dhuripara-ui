@@ -1,10 +1,12 @@
 // src/components/vdf/VdfExpenseForm.jsx
 import React, { useState } from 'react';
 import { vdfService } from '../../services/vdfService';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDateForInput } from '../../utils/dateFormatter';
 import { X } from 'lucide-react';
 
 const VdfExpenseForm = ({ expense, onClose, categories }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     expenseDate: expense?.expenseDate ? formatDateForInput(new Date(expense.expenseDate)) : formatDateForInput(new Date()),
     categoryId: expense?.categoryId || '',
@@ -66,16 +68,16 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
       
       if (expense) {
         await vdfService.updateExpense(expense.id, payload);
-        alert('Expense updated successfully');
+        alert(t('updated'));
       } else {
         await vdfService.createExpense(payload);
-        alert('Expense recorded successfully');
+        alert(t('created'));
       }
       
       onClose(true);
     } catch (error) {
       console.error('Error saving expense:', error);
-      alert(error.response?.data?.message || 'Failed to save expense');
+      alert(error.response?.data?.message || t('error'));
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,7 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8">
         <div className="flex justify-between items-center p-6 border-b">
           <h3 className="text-xl font-bold text-gray-800">
-            {expense ? 'Edit Expense' : 'Add New Expense'}
+            {expense ? t('editExpense') : t('addExpense')}
           </h3>
           <button onClick={() => onClose(false)} className="text-gray-400 hover:text-gray-600">
             <X size={24} />

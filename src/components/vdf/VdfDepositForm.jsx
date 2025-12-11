@@ -1,11 +1,13 @@
 // src/components/vdf/VdfDepositForm.jsx
 import React, { useState, useEffect } from 'react';
 import { vdfService } from '../../services/vdfService';
+import { useLanguage } from '../../context/LanguageContext';
 import { X } from 'lucide-react';
 
 // For VDF deposit form we keep only category, date, amount and notes.
 
 const VdfDepositForm = ({ deposit, onClose }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     depositDate: deposit?.depositDate || new Date().toISOString().split('T')[0],
     categoryId: deposit?.categoryId || deposit?.category?.id || '',
@@ -105,10 +107,10 @@ const VdfDepositForm = ({ deposit, onClose }) => {
 
       if (deposit?.id) {
         await vdfService.updateDeposit(deposit.id, payload);
-        alert('Deposit updated successfully');
+        alert(t('updated'));
       } else {
         await vdfService.createDeposit(payload);
-        alert('Deposit created successfully');
+        alert(t('created'));
       }
       onClose(true);
     } catch (error) {
@@ -127,7 +129,7 @@ const VdfDepositForm = ({ deposit, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
           <h3 className="text-lg font-semibold text-gray-900">
-            {deposit ? 'Edit Deposit' : 'Add Deposit'}
+            {deposit ? t('editDeposit') : t('addDeposit')}
           </h3>
           <button
             onClick={() => onClose(false)}
