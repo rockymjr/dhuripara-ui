@@ -102,7 +102,7 @@ const UpdatedSummary = () => {
       {/* VDF Section */}
       <div>
         <h1 className="text-lg sm:text-2xl font-bold text-gray-800 mb-4">
-          Village Development Fund Summary
+          {t('vdfSummary')}
         </h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -111,10 +111,10 @@ const UpdatedSummary = () => {
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Users size={28} className="sm:w-8 sm:h-8" />
               <span className="text-xs sm:text-sm bg-white bg-opacity-20 px-2 sm:px-3 py-1 rounded-full">
-                {vdfSummary?.activeFamilies} Active
+                {vdfSummary?.activeFamilies || vdfSummary?.activeContributors} {t('activeFamilies')}
               </span>
             </div>
-            <h3 className="text-sm sm:text-lg font-medium opacity-90">Total Families</h3>
+            <h3 className="text-sm sm:text-lg font-medium opacity-90">{t('totalFamilies')}</h3>
             <p className="text-2xl sm:text-3xl font-bold mt-2">
               {vdfSummary?.totalFamilies}
             </p>
@@ -125,7 +125,7 @@ const UpdatedSummary = () => {
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <TrendingUp size={28} className="sm:w-8 sm:h-8" />
             </div>
-            <h3 className="text-sm sm:text-lg font-medium opacity-90">Total Collected</h3>
+            <h3 className="text-sm sm:text-lg font-medium opacity-90">{t('totalCollected')}</h3>
             <p className="text-2xl sm:text-3xl font-bold mt-2 break-words">
               {formatCurrency(vdfSummary?.totalCollected)}
             </p>
@@ -136,7 +136,7 @@ const UpdatedSummary = () => {
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Package size={28} className="sm:w-8 sm:h-8" />
             </div>
-            <h3 className="text-sm sm:text-lg font-medium opacity-90">Total Expenses</h3>
+            <h3 className="text-sm sm:text-lg font-medium opacity-90">{t('totalExpenses')}</h3>
             <p className="text-2xl sm:text-3xl font-bold mt-2 break-words">
               {formatCurrency(vdfSummary?.totalExpenses)}
             </p>
@@ -147,7 +147,7 @@ const UpdatedSummary = () => {
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <Wallet size={28} className="sm:w-8 sm:h-8" />
             </div>
-            <h3 className="text-sm sm:text-lg font-medium opacity-90">VDF Balance</h3>
+            <h3 className="text-sm sm:text-lg font-medium opacity-90">{t('vdfBalance')}</h3>
             <p className="text-2xl sm:text-3xl font-bold mt-2 break-words">
               {formatCurrency(vdfSummary?.currentBalance)}
             </p>

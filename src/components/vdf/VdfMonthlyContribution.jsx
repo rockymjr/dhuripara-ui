@@ -1,5 +1,5 @@
 // src/components/vdf/VdfMonthlyContribution.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { vdfService } from '../../services/vdfService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useLanguage } from '../../context/LanguageContext';
@@ -62,6 +62,17 @@ const VdfMonthlyContribution = () => {
     }
   };
 
+  // Memoize filtered families to avoid recalculating on every render
+  const filteredFamilies = useMemo(() => {
+    if (!matrix?.families) return [];
+    if (!searchTerm) return matrix.families;
+    const search = searchTerm.toLowerCase();
+    return matrix.families.filter(family => {
+      const display = (family.memberName || family.familyHeadName || '').toLowerCase();
+      return display.includes(search);
+    });
+  }, [matrix?.families, searchTerm]);
+
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
@@ -71,12 +82,6 @@ const VdfMonthlyContribution = () => {
     return years;
   };
 
-  const filteredFamilies = (matrix?.families || []).filter(family => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    const display = (family.memberName || family.familyHeadName || '').toLowerCase();
-    return display.includes(search);
-  });
 
   if (loading) return <Loader message={t('loadingData')} />;
   
@@ -174,36 +179,36 @@ const VdfMonthlyContribution = () => {
             {/* Family Header - Table Row Format */}
             <div 
               onClick={() => setExpandedFamily(expandedFamily === family.familyConfigId ? null : family.familyConfigId)}
-              className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-gray-50 transition border-b border-gray-200"
+              className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-6 py-4 cursor-pointer hover:bg-gray-50 transition border-b border-gray-200 gap-3 md:gap-0"
             >
-              {/* Family Name Column */}
-              <div className="flex items-center space-x-3 flex-1 min-w-0">
+              {/* Family Name Column - Full width on mobile, flex on desktop */}
+              <div className="flex items-center space-x-3 flex-1 min-w-0 w-full md:w-auto">
                 {expandedFamily === family.familyConfigId ? (
                   <ChevronDown size={20} className="text-teal-600 flex-shrink-0" />
                 ) : (
                   <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
                 )}
-                <h3 className="font-semibold text-gray-900 truncate">{family.memberName || family.familyHeadName}</h3>
+                <h3 className="font-semibold text-gray-900 break-words md:truncate text-base md:text-sm">{family.memberName || family.familyHeadName}</h3>
               </div>
 
-              {/* Summary Columns - 4 columns: Total Paid, Total Due, This Year Paid, Edit Button */}
-              <div className="flex items-center gap-8 text-sm flex-shrink-0 ml-4">
+              {/* Summary Columns - Stack on mobile, horizontal on desktop */}
+              <div className="flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-8 text-sm flex-shrink-0 w-full md:w-auto md:ml-4">
                 {/* Column 1: Total Paid (All-time) */}
-                <div className="text-right w-32">
+                <div className="text-left md:text-right w-auto md:w-32">
                   <p className="text-gray-500 text-xs mb-1 font-medium">Total Paid</p>
-                  <p className="font-semibold text-green-600">{formatCurrency(family.totalPaidAllTime || 0)}</p>
+                  <p className="font-semibold text-green-600 text-sm">{formatCurrency(family.totalPaidAllTime || 0)}</p>
                 </div>
 
                 {/* Column 2: Total Due (All-time) */}
-                <div className="text-right w-32">
+                <div className="text-left md:text-right w-auto md:w-32">
                   <p className="text-gray-500 text-xs mb-1 font-medium">Total Due</p>
-                  <p className="font-semibold text-red-600">{formatCurrency(family.totalDueAllTime || 0)}</p>
+                  <p className="font-semibold text-red-600 text-sm">{formatCurrency(family.totalDueAllTime || 0)}</p>
                 </div>
 
                 {/* Column 3: This Year Paid */}
-                <div className="text-right w-32">
+                <div className="text-left md:text-right w-auto md:w-32">
                   <p className="text-gray-500 text-xs mb-1 font-medium">{selectedYear} Paid</p>
-                  <p className="font-semibold text-purple-600">{formatCurrency(family.totalPaid || 0)}</p>
+                  <p className="font-semibold text-purple-600 text-sm">{formatCurrency(family.totalPaid || 0)}</p>
                 </div>
 
                 {/* Column 4: Edit Button (Admin only) */}
@@ -217,7 +222,7 @@ const VdfMonthlyContribution = () => {
                     title="Edit"
                   >
                     <Edit size={16} />
-                    <span>Edit</span>
+                    <span className="hidden sm:inline">Edit</span>
                   </button>
                 )}
               </div>

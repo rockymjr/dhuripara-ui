@@ -1,19 +1,22 @@
 // src/components/vdf/VdfDepositForm.jsx
 import React, { useState, useEffect } from 'react';
 import { vdfService } from '../../services/vdfService';
+import { adminService } from '../../services/adminService';
 import { useLanguage } from '../../context/LanguageContext';
 import { X } from 'lucide-react';
 
 // For VDF deposit form we keep only category, date, amount and notes.
 
 const VdfDepositForm = ({ deposit, onClose }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     depositDate: deposit?.depositDate || new Date().toISOString().split('T')[0],
     categoryId: deposit?.categoryId || deposit?.category?.id || '',
     memberId: deposit?.memberId || '',
     amount: deposit?.amount?.toString() || '',
-    notes: deposit?.notes || ''
+    notes: deposit?.notes || '',
+    sourceName: deposit?.sourceName || '',
+    sourceNameBn: deposit?.sourceNameBn || ''
   });
 
   const [categories, setCategories] = useState([]);
@@ -22,6 +25,25 @@ const VdfDepositForm = ({ deposit, onClose }) => {
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Helper to get member display name
+  const getMemberDisplayName = (member) => {
+    if (!member) return '-';
+    // Prefer explicit Bengali fields if language is set to bn
+    if (language === 'bn') {
+      const bnFirst = member.firstNameBn || member.first_name_bn || member.nameBn || member.name_bn || member.bengaliName || member.bnName;
+      const bnLast = member.lastNameBn || member.last_name_bn || '';
+      const bnFull = [bnFirst, bnLast].filter(Boolean).join(' ').trim();
+      if (bnFull) return bnFull;
+    }
+    // Fallback to common English fields
+    const first = member.firstName || member.first_name || member.first || '';
+    const last = member.lastName || member.last_name || member.last || '';
+    const full = `${first} ${last}`.trim();
+    if (full) return full;
+    // Some APIs may expose a single `name` field
+    return member.name || member.memberName || member.member_name || member.memberHeadName || '-';
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -44,7 +66,7 @@ const VdfDepositForm = ({ deposit, onClose }) => {
   const fetchMembers = async () => {
     try {
       setLoadingMembers(true);
-      const data = await vdfService.getMembers();
+      const data = await adminService.getAllMembers('');
       console.log('Fetched members:', data);
       setMembers(Array.isArray(data) ? data : (data?.content || []));
     } catch (error) {
@@ -102,7 +124,9 @@ const VdfDepositForm = ({ deposit, onClose }) => {
         memberId: formData.memberId || null,
         categoryId: formData.categoryId,
         amount: parseFloat(formData.amount),
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        sourceName: formData.sourceName || null,
+        sourceNameBn: formData.sourceNameBn || null
       };
 
       if (deposit?.id) {
@@ -209,15 +233,41 @@ const VdfDepositForm = ({ deposit, onClose }) => {
               </option>
               {members.map(member => (
                 <option key={member.id} value={member.id}>
-                  {member.memberHeadName || member.name}
+                  {getMemberDisplayName(member)}
                 </option>
               ))}
             </select>
           </div>
 
-          
+          {/* Source Name (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('sourceName')} (Optional)
+            </label>
+            <input
+              type="text"
+              name="sourceName"
+              value={formData.sourceName}
+              onChange={handleChange}
+              placeholder="Enter source name (e.g., donor name)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
 
-          
+          {/* Source Name Bengali (Optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('sourceName')} (Bengali) (Optional)
+            </label>
+            <input
+              type="text"
+              name="sourceNameBn"
+              value={formData.sourceNameBn}
+              onChange={handleChange}
+              placeholder="উৎসের নাম (বাংলা)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
 
           {/* Amount */}
           <div>

@@ -85,8 +85,10 @@ const VdfPublicDeposits = () => {
       }
 
       setDeposits(allDeposits);
-      // Reset category filter only when fetch explicitly requested for a new year
-      setSelectedCategory('all');
+      // Only reset category filter when year changes, not when category filter changes
+      if (year !== selectedYear) {
+        setSelectedCategory('all');
+      }
     } catch (error) {
       console.error('Error fetching deposits:', error);
       alert(t('errorFetching'));
@@ -258,7 +260,7 @@ const VdfPublicDeposits = () => {
               onChange={(e) => {
                 const newCat = e.target.value;
                 setSelectedCategory(newCat);
-                fetchDeposits({ year: selectedYear, member: selectedMember, category: newCat });
+                // Don't refetch deposits when only category filter changes - filtering is done client-side
               }}
               className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
             >
