@@ -229,7 +229,7 @@ const VdfPublicDeposits = () => {
 
       </div>
 
-      {/* Category-wise Summary Table */}
+      {/* Category-wise Summary Table 
       {Object.keys(depositsByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
           <div className="px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold">
@@ -261,7 +261,7 @@ const VdfPublicDeposits = () => {
             </table>
           </div>
         </div>
-      )}
+      )}*/}
 
       {/* Category Filter and Deposits List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

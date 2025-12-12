@@ -394,7 +394,7 @@ const translations = {
     graminBank: 'গ্রামীণ ব্যাংক',
     account: 'অ্যাকাউন্ট',
     myAccount: 'আমার অ্যাকাউন্ট',
-    myVdf: 'আমার ভি ডি এফ',
+    myVdf: 'আমার',
     
     // Common
     save: 'সংরক্ষণ করুন',
@@ -412,8 +412,8 @@ const translations = {
     day: 'দিন',
     
     // VDF Module
-    vdf: 'গ্রাম উন্নয়ন তহবিল',
-    vdfLanding: 'গ্রাম উন্নয়ন তহবিল',
+    vdf: 'গ্রাম উন্নয়ন',
+    vdfLanding: 'গ্রাম উন্নয়ন',
     vdfFamilyManagement: 'পরিবার',
     vdfDeposits: 'জমা',
     vdfExpenses: 'খরচ',

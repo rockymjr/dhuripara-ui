@@ -28,6 +28,7 @@ import DepositManagement from './components/admin/DepositManagement';
 import LoanManagement from './components/admin/LoanManagement';
 import MemberStatement from './components/admin/MemberStatement';
 import YearlyReport from './components/admin/YearlyReport';
+import SessionManagement from './components/admin/SessionManagement';
 
 // VDF Admin Pages
 import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
@@ -96,6 +97,7 @@ function RouterWrapper() {
         <Route path="/admin/loans" element={isOperator ? <LoanManagement readOnly={true} /> : <ProtectedRoute><LoanManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/statements" element={isOperator ? <MemberStatement readOnly={true} /> : <ProtectedRoute><MemberStatement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute><YearlyReport /></ProtectedRoute>} />
+        <Route path="/admin/sessions" element={<ProtectedRoute><SessionManagement /></ProtectedRoute>} />
 
         {/* Admin - VDF */}
         <Route path="/admin/vdf/families" element={isOperator ? <VdfFamilyManagement readOnly={true} /> : <ProtectedRoute><VdfFamilyManagement readOnly={false} /></ProtectedRoute>} />

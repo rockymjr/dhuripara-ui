@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../../services/adminService';
 import { useLanguage } from '../../context/LanguageContext';
-import { Search, UserPlus, Edit, Trash2, Unlock } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Unlock, Monitor } from 'lucide-react';
 import Loader from '../common/Loader';
 import MemberForm from './MemberForm';
 import { formatDate } from '../../utils/dateFormatter';
 import { useMemberAuth } from '../../context/MemberAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import StyledTable from '../common/StyledTable';
 
 const MemberManagement = () => {
@@ -17,6 +18,7 @@ const MemberManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const { isOperator } = useMemberAuth();
+  const { isAuthenticated: isAdmin } = useAuth();
 
   useEffect(() => {
     fetchMembers();
@@ -108,15 +110,26 @@ const MemberManagement = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">{t('members')}</h2>
-        {!isOperator && (
-          <button
-            onClick={handleAddNew}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
-          >
-            <UserPlus size={20} />
-            <span>{t('addMember')}</span>
-          </button>
-        )}
+        <div className="flex items-center space-x-2">
+          {isAdmin && (
+            <Link
+              to="/admin/sessions"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            >
+              <Monitor size={20} />
+              <span>Active Sessions</span>
+            </Link>
+          )}
+          {!isOperator && (
+            <button
+              onClick={handleAddNew}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            >
+              <UserPlus size={20} />
+              <span>{t('addMember')}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Search Bar */}

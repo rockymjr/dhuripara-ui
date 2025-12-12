@@ -162,20 +162,6 @@ const UpdatedNavbar = () => {
             </Link>
           )}
 
-          {(showOperatorMenu || showMemberMenu) && hasBankActivity && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-20 h-16 rounded bg-blue-600 hover:bg-blue-700 transition px-1" title={t('myAccount')}>
-              <Home size={22} />
-              <span className="text-xs text-white mt-1">{t('account')}</span>
-            </Link>
-          )}
-
-          {/* MyVDF quick access (members/operators) */}
-          {(showOperatorMenu || showMemberMenu) && (
-            <Link to="/member/account" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-cyan-600 hover:bg-cyan-700 transition px-1" title={t('myVdf')}>
-              <Package size={22} />
-              <span className="text-xs text-white mt-1">{t('myVdf')}</span>
-            </Link>
-          )}
         </div>
 
         {/* Mobile quick-access buttons */}
@@ -204,19 +190,6 @@ const UpdatedNavbar = () => {
             </Link>
           )}
 
-          {(showOperatorMenu || showMemberMenu) && hasBankActivity && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-15 h-12 rounded border border-white/20 bg-blue-600 hover:bg-blue-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('myAccount')}>
-              <Home size={18} />
-              <span className="text-[11px] text-white mt-1">{t('myAccount')}</span>
-            </Link>
-          )}
-
-          {(showOperatorMenu || showMemberMenu) && (
-            <Link to="/member/account" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-cyan-600 hover:bg-cyan-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('myVdf')}>
-              <Package size={18} />
-              <span className="text-[11px] text-white mt-1">{t('myVdf')}</span>
-            </Link>
-          )}
         </div>
       </div>
 

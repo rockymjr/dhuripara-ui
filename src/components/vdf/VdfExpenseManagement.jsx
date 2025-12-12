@@ -27,8 +27,11 @@ const VdfExpenseManagement = () => {
   useEffect(() => {
     console.log('VdfExpenseManagement mounted');
     fetchCategories();
-    fetchExpenses();
   }, []);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [selectedYear]);
 
   const fetchCategories = async () => {
     try {
@@ -43,13 +46,13 @@ const VdfExpenseManagement = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const data = await vdfService.getAllExpenses(page, 100);
+      const data = await vdfService.getAllExpenses(selectedYear);
       console.log('Fetched expenses:', data);
       // Handle both paginated and non-paginated responses
       const expenses = Array.isArray(data) ? data : (data.content || []);
       console.log('Setting expenses:', expenses);
       setExpenses(expenses);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(1); // Backend returns all expenses for the year, no pagination
     } catch (error) {
       console.error('Error fetching expenses:', error);
       alert(t('errorFetching'));
@@ -89,12 +92,8 @@ const VdfExpenseManagement = () => {
     }
   };
 
-  // Calculate summary
-  const filteredExpenses = (expenses || []).filter(exp => {
-    const expDate = new Date(exp.expenseDate);
-    const yearMatch = expDate.getFullYear() === selectedYear;
-    return yearMatch;
-  });
+  // Calculate summary - expenses are already filtered by year from backend
+  const filteredExpenses = expenses || [];
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
   const expensesByCategory = (categories || []).map(cat => ({

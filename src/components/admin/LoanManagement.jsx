@@ -12,7 +12,7 @@ import LoanPayment from './LoanPayment';
 import LoanPaymentHistory from './LoanPaymentHistory';
 import StyledTable from '../common/StyledTable';
 
-const LoanManagement = ({ readOnly }) => {
+const LoanManagement = ({ readOnly, statusFilter: externalStatusFilter, onFilterChange }) => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -22,8 +22,12 @@ const LoanManagement = ({ readOnly }) => {
   const [closingLoan, setClosingLoan] = useState(null);
   const [paymentLoan, setPaymentLoan] = useState(null);
   const [historyLoan, setHistoryLoan] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('ACTIVE');
+  const [internalStatusFilter, setInternalStatusFilter] = useState('ACTIVE');
   const [sortedLoans, setSortedLoans] = useState([]);
+
+  // Use external filter if provided, otherwise use internal state
+  const statusFilter = externalStatusFilter !== undefined ? externalStatusFilter : internalStatusFilter;
+  const setStatusFilter = onFilterChange || setInternalStatusFilter;
 
   useEffect(() => {
     fetchLoans();
@@ -98,52 +102,54 @@ const LoanManagement = ({ readOnly }) => {
         )}
       </div>
 
-      {/* Status Filter */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => {
-                setStatusFilter('ALL');
-                setPage(0);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                statusFilter === 'ALL'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {t('allLoans') || 'All Loans'}
-            </button>
-            <button
-              onClick={() => {
-                setStatusFilter('ACTIVE');
-                setPage(0);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                statusFilter === 'ACTIVE'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {t('active') || 'Active'}
-            </button>
-            <button
-              onClick={() => {
-                setStatusFilter('CLOSED');
-                setPage(0);
-              }}
-              className={`px-4 py-2 rounded-lg transition ${
-                statusFilter === 'CLOSED'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {t('closed') || 'Closed'}
-            </button>
+      {/* Status Filter - only show if not controlled externally */}
+      {externalStatusFilter === undefined && (
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  setStatusFilter('ALL');
+                  setPage(0);
+                }}
+                className={`px-4 py-2 rounded-lg transition ${
+                  statusFilter === 'ALL'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {t('allLoans') || 'All Loans'}
+              </button>
+              <button
+                onClick={() => {
+                  setStatusFilter('ACTIVE');
+                  setPage(0);
+                }}
+                className={`px-4 py-2 rounded-lg transition ${
+                  statusFilter === 'ACTIVE'
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {t('active') || 'Active'}
+              </button>
+              <button
+                onClick={() => {
+                  setStatusFilter('CLOSED');
+                  setPage(0);
+                }}
+                className={`px-4 py-2 rounded-lg transition ${
+                  statusFilter === 'CLOSED'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {t('closed') || 'Closed'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <StyledTable
         renderHeader={() => (

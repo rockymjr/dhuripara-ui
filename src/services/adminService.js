@@ -104,5 +104,36 @@ export const adminService = {
   getYearlySettlement: async (year) => {
     const response = await api.get(`/admin/reports/yearly-settlement${year ? `?year=${year}` : ''}`);
     return response.data;
+  },
+
+  // Session Management
+  getAllActiveSessions: async () => {
+    const response = await api.get('/admin/sessions');
+    return response.data;
+  },
+
+  getSessionsForUser: async (userId, userType) => {
+    const response = await api.get(`/admin/sessions/user/${userId}?userType=${userType}`);
+    return response.data;
+  },
+
+  getSessionStats: async () => {
+    const response = await api.get('/admin/sessions/stats');
+    return response.data;
+  },
+
+  forceLogoutSession: async (sessionId) => {
+    const response = await api.delete(`/admin/sessions/${sessionId}`);
+    return response.data;
+  },
+
+  forceLogoutByToken: async (token) => {
+    const response = await api.delete(`/admin/sessions/token/${token}`);
+    return response.data;
+  },
+
+  forceLogoutAllForUser: async (userId, userType) => {
+    const response = await api.delete(`/admin/sessions/user/${userId}?userType=${userType}`);
+    return response.data;
   }
 };

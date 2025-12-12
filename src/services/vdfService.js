@@ -62,8 +62,9 @@ export const vdfService = {
     return response.data;
   },
 
-  getAllExpenses: async (page = 0, size = 20) => {
-    const response = await api.get(`/admin/vdf/expenses?page=${page}&size=${size}`);
+  getAllExpenses: async (year) => {
+    const yearParam = year ? `?year=${year}` : '';
+    const response = await api.get(`/admin/vdf/expenses${yearParam}`);
     return response.data;
   },
 

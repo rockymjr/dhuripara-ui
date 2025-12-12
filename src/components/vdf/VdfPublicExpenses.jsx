@@ -129,7 +129,7 @@ const VdfPublicExpenses = () => {
         </div>
       </div>
 
-      {/* Expenses by Category */}
+      {/* Expenses by Category 
       {Object.keys(expensesByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow mb-4 overflow-hidden">
           <div className="px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-semibold">
@@ -154,7 +154,7 @@ const VdfPublicExpenses = () => {
             </table>
           </div>
         </div>
-      )}
+      )}*/}
 
       {/* Main Expenses Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

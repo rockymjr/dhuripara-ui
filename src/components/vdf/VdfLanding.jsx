@@ -7,6 +7,7 @@ import VdfPublicDeposits from './VdfPublicDeposits';
 import VdfMonthlyContribution from './VdfMonthlyContribution';
 import VdfFamilyManagement from '../admin/vdf/VdfFamilyManagement';
 import VdfExpenseManagement from './VdfExpenseManagement';
+import MemberAccount from '../member/MemberAccount';
 
 const VdfLanding = () => {
   const { t } = useLanguage();
@@ -15,6 +16,7 @@ const VdfLanding = () => {
   const { isAuthenticated: isMember, isOperator } = useMemberAuth();
   
   const sections = [
+    { key: 'myVdf', label: t('myVdf') || 'My VDF', memberOnly: true },
     { key: 'expenses', label: t('vdfExpenses') },
     { key: 'deposits', label: t('vdfDeposits') },
     { key: 'monthly', label: t('Monthly') },
@@ -25,6 +27,8 @@ const VdfLanding = () => {
 
   const renderSection = () => {
     switch (selectedSection) {
+      case 'myVdf':
+        return isMember ? <MemberAccount /> : null;
       case 'expenses':
         return isAdmin ? <VdfExpenseManagement /> : <VdfPublicExpenses />;
       case 'deposits':
@@ -38,7 +42,11 @@ const VdfLanding = () => {
     }
   };
 
-  const visibleSections = sections.filter(s => !s.adminOnly || showFamilies);
+  const visibleSections = sections.filter(s => {
+    if (s.adminOnly) return showFamilies;
+    if (s.memberOnly) return isMember || isOperator;
+    return true;
+  });
 
   return (
     <div className="p-2 md:p-6">
