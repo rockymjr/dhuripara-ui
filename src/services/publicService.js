@@ -14,5 +14,10 @@ export const publicService = {
   getLoans: async (page = 0, size = 10) => {
     const response = await api.get(`/public/loans?page=${page}&size=${size}`);
     return response.data;
+  },
+
+  getMembers: async () => {
+    const response = await api.get('/public/members');
+    return response.data;
   }
 };

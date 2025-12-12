@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { vdfService } from '../../services/vdfService';
 import { adminService } from '../../services/adminService';
+import { publicService } from '../../services/publicService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { useAuth } from '../../context/AuthContext';
@@ -39,15 +40,29 @@ const VdfPublicDeposits = () => {
 
   const fetchMembers = async () => {
     try {
-      const data = await adminService.getAllMembers('');
-      console.log('Fetched members:', data);
-      console.log('Members array:', Array.isArray(data) ? 'is array' : 'not array');
+      // Use public service for public pages, fallback to admin service if authenticated
+      let data;
+      try {
+        data = await publicService.getMembers();
+      } catch (err) {
+        // Fallback to admin service if user is authenticated
+        if (isAdmin) {
+          data = await adminService.getAllMembers('');
+        } else {
+          throw err;
+        }
+      }
       const membersList = Array.isArray(data) ? data : (data?.content || []);
-      console.log('Members list length:', membersList.length);
-      console.log('First member:', membersList[0]);
-      setMembers(membersList);
+      // Already sorted by backend, but ensure it's sorted
+      const sorted = membersList.sort((a, b) => {
+        const nameA = (a.firstName || '') + ' ' + (a.lastName || '');
+        const nameB = (b.firstName || '') + ' ' + (b.lastName || '');
+        return nameA.localeCompare(nameB);
+      });
+      setMembers(sorted);
     } catch (error) {
       console.error('Error fetching members:', error);
+      // Don't show error to user, just leave members empty
     }
   };
 

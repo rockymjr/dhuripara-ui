@@ -7,7 +7,8 @@ import { memberService } from '../../services/memberService';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Home, User, LogOut, Users as UsersIcon, TrendingUp, TrendingDown, 
-         Package, DollarSign, Calendar, Gift } from 'lucide-react';
+         Package, DollarSign, Calendar, Gift, Bell } from 'lucide-react';
+import VdfNotifications from '../vdf/VdfNotifications';
 
 const UpdatedNavbar = () => {
   const { isAuthenticated: isAdmin, username: adminUsername, logout: adminLogout } = useAuth();
@@ -30,6 +31,8 @@ const UpdatedNavbar = () => {
   const showMemberMenu = isMember && !isOperator;
   const showOperatorMenu = isMember && isOperator;
   const [hasBankActivity, setHasBankActivity] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -48,6 +51,24 @@ const UpdatedNavbar = () => {
     };
     fetch();
     return () => { mounted = false; };
+  }, [isMember]);
+
+  // Fetch unread notification count for members
+  useEffect(() => {
+    if (!isMember) return;
+    const fetchUnreadCount = async () => {
+      try {
+        const { vdfNotificationService } = await import('../../services/vdfNotificationService');
+        const unread = await vdfNotificationService.getUnreadNotifications();
+        setUnreadNotificationCount(unread.length);
+      } catch (err) {
+        console.error('Failed to fetch notification count', err);
+      }
+    };
+    fetchUnreadCount();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
   }, [isMember]);
 
   return (
@@ -82,6 +103,21 @@ const UpdatedNavbar = () => {
             <LanguageSwitcher />
             {(isAdmin || isMember) && (
               <div className="flex items-center space-x-2">
+                {isMember && (
+                  <button
+                    onClick={() => setShowNotifications(true)}
+                    className="relative p-2 text-white hover:bg-green-700 rounded transition"
+                    title="Notifications"
+                    aria-label="Notifications"
+                  >
+                    <Bell size={18} />
+                    {unreadNotificationCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                      </span>
+                    )}
+                  </button>
+                )}
                 <div className="text-green-200 text-sm mr-2">{isAdmin ? `${t('admin')}: ${adminUsername}` : memberName}</div>
                 <button onClick={() => (isAdmin ? handleAdminLogout() : handleMemberLogout())} className="ml-1 px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white" title={t('logout')} aria-label={t('logout')}>
                   <LogOut size={16} />
@@ -183,6 +219,21 @@ const UpdatedNavbar = () => {
           )}
         </div>
       </div>
+
+      {/* Notifications Modal */}
+      {showNotifications && isMember && (
+        <VdfNotifications
+          onClose={() => {
+            setShowNotifications(false);
+            // Refresh unread count
+            import('../../services/vdfNotificationService').then(({ vdfNotificationService }) => {
+              vdfNotificationService.getUnreadNotifications()
+                .then(unread => setUnreadNotificationCount(unread.length))
+                .catch(() => {});
+            });
+          }}
+        />
+      )}
     </nav>
   );
 };

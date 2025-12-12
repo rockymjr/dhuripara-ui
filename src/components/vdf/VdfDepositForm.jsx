@@ -16,7 +16,8 @@ const VdfDepositForm = ({ deposit, onClose }) => {
     amount: deposit?.amount?.toString() || '',
     notes: deposit?.notes || '',
     sourceName: deposit?.sourceName || '',
-    sourceNameBn: deposit?.sourceNameBn || ''
+    sourceNameBn: deposit?.sourceNameBn || '',
+    sendNotification: false
   });
 
   const [categories, setCategories] = useState([]);
@@ -68,7 +69,14 @@ const VdfDepositForm = ({ deposit, onClose }) => {
       setLoadingMembers(true);
       const data = await adminService.getAllMembers('');
       console.log('Fetched members:', data);
-      setMembers(Array.isArray(data) ? data : (data?.content || []));
+      const membersList = Array.isArray(data) ? data : (data?.content || []);
+      // Sort members alphabetically by name
+      const sorted = membersList.sort((a, b) => {
+        const nameA = (a.firstName || '') + ' ' + (a.lastName || '');
+        const nameB = (b.firstName || '') + ' ' + (b.lastName || '');
+        return nameA.localeCompare(nameB);
+      });
+      setMembers(sorted);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -89,7 +97,7 @@ const VdfDepositForm = ({ deposit, onClose }) => {
 
     if (!formData.amount) {
       newErrors.amount = 'Amount is required';
-    } else if (isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
+    } else if (isNaN(parseInt(formData.amount)) || parseInt(formData.amount) <= 0) {
       newErrors.amount = 'Amount must be greater than 0';
     }
 
@@ -123,10 +131,11 @@ const VdfDepositForm = ({ deposit, onClose }) => {
         depositDate: formData.depositDate,
         memberId: formData.memberId || null,
         categoryId: formData.categoryId,
-        amount: parseFloat(formData.amount),
+        amount: Math.round(parseFloat(formData.amount)),
         notes: formData.notes || null,
         sourceName: formData.sourceName || null,
-        sourceNameBn: formData.sourceNameBn || null
+        sourceNameBn: formData.sourceNameBn || null,
+        sendNotification: formData.sendNotification || false
       };
 
       if (deposit?.id) {
@@ -279,9 +288,9 @@ const VdfDepositForm = ({ deposit, onClose }) => {
               name="amount"
               value={formData.amount}
               onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
+              placeholder="0"
+              step="1"
+              min="1"
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                 errors.amount ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -304,6 +313,23 @@ const VdfDepositForm = ({ deposit, onClose }) => {
               placeholder="Add any additional notes"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
+          </div>
+
+          {/* Send Notification */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="sendNotification"
+              name="sendNotification"
+              checked={formData.sendNotification}
+              onChange={(e) => setFormData(prev => ({ ...prev, sendNotification: e.target.checked }))}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label htmlFor="sendNotification" className="text-sm font-medium text-gray-700">
+              {formData.memberId 
+                ? 'Send notification to this member' 
+                : 'Send notification to all users'}
+            </label>
           </div>
 
           {/* Buttons */}

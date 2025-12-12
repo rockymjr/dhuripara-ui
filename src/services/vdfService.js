@@ -98,8 +98,9 @@ export const vdfService = {
     return response.data;
   },
 
-  getPublicExpenses: async (page = 0, size = 20) => {
-    const response = await api.get(`/public/vdf/expenses?page=${page}&size=${size}`);
+  getPublicExpenses: async (year) => {
+    const yearParam = year ? `?year=${year}` : '';
+    const response = await api.get(`/public/vdf/expenses${yearParam}`);
     return response.data;
   },
 

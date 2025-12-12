@@ -13,6 +13,7 @@ const UpdatedSummary = () => {
   const [vdfSummary, setVdfSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('bank'); // 'bank' or 'vdf'
 
   useEffect(() => {
     fetchSummaries();
@@ -40,7 +41,34 @@ const UpdatedSummary = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8">
+      {/* Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab('bank')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'bank'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Gramin Bank Summary
+          </button>
+          <button
+            onClick={() => setActiveTab('vdf')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'vdf'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Village Development Summary
+          </button>
+        </nav>
+      </div>
+
       {/* Bank Section */}
+      {activeTab === 'bank' && (
       <div className="mb-8">
         <h1 className="text-lg sm:text-2xl font-bold text-gray-800 mb-4">
           {t('appName')} - Banking Summary
@@ -98,8 +126,10 @@ const UpdatedSummary = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* VDF Section */}
+      {activeTab === 'vdf' && (
       <div>
         <h1 className="text-lg sm:text-2xl font-bold text-gray-800 mb-4">
           {t('vdfSummary')}
@@ -153,7 +183,50 @@ const UpdatedSummary = () => {
             </p>
           </div>
         </div>
+
+        {/* Category-wise Breakdown */}
+        {(vdfSummary?.categoryWiseDeposits || vdfSummary?.categoryWiseExpenses) && (
+          <div className="mt-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Category-wise Breakdown</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Category-wise Deposits */}
+              {vdfSummary?.categoryWiseDeposits && Object.keys(vdfSummary.categoryWiseDeposits).length > 0 && (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Deposits by Category</h3>
+                  <div className="space-y-2">
+                    {Object.entries(vdfSummary.categoryWiseDeposits)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([category, amount]) => (
+                        <div key={category} className="flex justify-between items-center py-2 border-b">
+                          <span className="text-gray-700">{category}</span>
+                          <span className="font-semibold text-green-600">{formatCurrency(amount)}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Category-wise Expenses */}
+              {vdfSummary?.categoryWiseExpenses && Object.keys(vdfSummary.categoryWiseExpenses).length > 0 && (
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Expenses by Category</h3>
+                  <div className="space-y-2">
+                    {Object.entries(vdfSummary.categoryWiseExpenses)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([category, amount]) => (
+                        <div key={category} className="flex justify-between items-center py-2 border-b">
+                          <span className="text-gray-700">{category}</span>
+                          <span className="font-semibold text-orange-600">{formatCurrency(amount)}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+      )}
     </div>
   );
 };

@@ -10,9 +10,11 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
   const [formData, setFormData] = useState({
     expenseDate: expense?.expenseDate ? formatDateForInput(new Date(expense.expenseDate)) : formatDateForInput(new Date()),
     categoryId: expense?.categoryId || '',
-    amount: expense?.amount?.toString() || '',
+    amount: expense?.amount ? Math.round(parseFloat(expense.amount)).toString() : '',
     description: expense?.description || '',
-    notes: expense?.notes || ''
+    descriptionBn: expense?.descriptionBn || '',
+    notes: expense?.notes || '',
+    sendNotification: false
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -36,7 +38,7 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
       newErrors.categoryId = 'Category is required';
     }
     
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+    if (!formData.amount || parseInt(formData.amount) <= 0) {
       newErrors.amount = 'Amount must be greater than 0';
     }
     
@@ -61,9 +63,11 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
       const payload = {
         expenseDate: formData.expenseDate,
         categoryId: formData.categoryId,
-        amount: parseFloat(formData.amount),
+        amount: Math.round(parseFloat(formData.amount)),
         description: formData.description.trim(),
-        notes: formData.notes.trim() || null
+        descriptionBn: formData.descriptionBn.trim() || null,
+        notes: formData.notes.trim() || null,
+        sendNotification: formData.sendNotification || false
       };
       
       if (expense) {
@@ -140,8 +144,8 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
               name="amount"
               value={formData.amount}
               onChange={handleChange}
-              min="0.01"
-              step="0.01"
+              min="1"
+              step="1"
               placeholder="Enter amount"
               className={`w-full px-3 py-2 border rounded-lg ${errors.amount ? 'border-red-500' : 'border-gray-300'}`}
             />
@@ -165,6 +169,20 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description (Bengali) <span className="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <textarea
+              name="descriptionBn"
+              value={formData.descriptionBn}
+              onChange={handleChange}
+              rows="3"
+              placeholder="ব্যয়ের বিবরণ (বাংলা)..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Notes <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <textarea
@@ -175,6 +193,20 @@ const VdfExpenseForm = ({ expense, onClose, categories }) => {
               placeholder="Additional notes..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="sendNotification"
+              name="sendNotification"
+              checked={formData.sendNotification}
+              onChange={(e) => setFormData(prev => ({ ...prev, sendNotification: e.target.checked }))}
+              className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+            />
+            <label htmlFor="sendNotification" className="text-sm font-medium text-gray-700">
+              Send notification to all users
+            </label>
           </div>
 
           <div className="flex space-x-3 pt-4">

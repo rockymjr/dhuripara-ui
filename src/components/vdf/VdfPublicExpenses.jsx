@@ -28,7 +28,7 @@ const VdfPublicExpenses = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const data = await vdfService.getPublicExpenses(0, 100);
+      const data = await vdfService.getPublicExpenses(selectedYear);
       // Handle both paginated and direct array responses
       setExpenses(Array.isArray(data) ? data : (data.content || []));
     } catch (error) {

@@ -26,7 +26,13 @@ const MemberManagement = () => {
     try {
       setLoading(true);
       const data = await adminService.getAllMembers(search);
-      setMembers(data);
+      // Sort members alphabetically by name
+      const sorted = Array.isArray(data) ? data.sort((a, b) => {
+        const nameA = (a.firstName || '') + ' ' + (a.lastName || '');
+        const nameB = (b.firstName || '') + ' ' + (b.lastName || '');
+        return nameA.localeCompare(nameB);
+      }) : data;
+      setMembers(sorted);
     } catch (error) {
       console.error('Error fetching members:', error);
       alert('Failed to load members');
