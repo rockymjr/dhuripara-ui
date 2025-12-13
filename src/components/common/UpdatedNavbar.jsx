@@ -146,9 +146,9 @@ const UpdatedNavbar = () => {
             <span className="text-xs text-white mt-1">{t('vdf')}</span>
           </Link>
 
-          {/* Admin/Operator: Gramin Bank button only */}
-          {(showAdminMenu || showOperatorMenu) && (
-            <Link to="/admin/gramin-bank" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-yellow-600 hover:bg-yellow-700 transition px-1" title={t('graminBank')}>
+          {/* Admin/Operator/Member: Gramin Bank button */}
+          {(showAdminMenu || showOperatorMenu || showMemberMenu) && (
+            <Link to={showMemberMenu ? "/member/bank" : "/admin/gramin-bank"} className="flex flex-col items-center justify-center w-16 h-16 rounded bg-yellow-600 hover:bg-yellow-700 transition px-1" title={t('graminBank')}>
               <Package size={22} />
               <span className="text-xs text-white mt-1">{t('graminBank')}</span>
             </Link>
@@ -176,8 +176,8 @@ const UpdatedNavbar = () => {
             <span className="text-[11px] text-white mt-1">{t('vdf')}</span>
           </Link>
 
-          {(showAdminMenu || showOperatorMenu) && (
-            <Link to="/admin/gramin-bank" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-yellow-600 hover:bg-yellow-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('graminBank')}>
+          {(showAdminMenu || showOperatorMenu || showMemberMenu) && (
+            <Link to={showMemberMenu ? "/member/bank" : "/admin/gramin-bank"} className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-yellow-600 hover:bg-yellow-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('graminBank')}>
               <Package size={18} />
               <span className="text-[11px] text-white mt-1">{t('bank')}</span>
             </Link>

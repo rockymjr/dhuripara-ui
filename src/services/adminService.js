@@ -135,5 +135,37 @@ export const adminService = {
   forceLogoutAllForUser: async (userId, userType) => {
     const response = await api.delete(`/admin/sessions/user/${userId}?userType=${userType}`);
     return response.data;
+  },
+
+  // Document Management
+  getDocumentCategories: async () => {
+    const response = await api.get('/admin/documents/categories');
+    return response.data;
+  },
+
+  uploadDocument: async (memberId, documentCategoryId, file, notes) => {
+    const formData = new FormData();
+    formData.append('memberId', memberId);
+    formData.append('documentCategoryId', documentCategoryId);
+    formData.append('file', file);
+    if (notes) {
+      formData.append('notes', notes);
+    }
+    const response = await api.post('/admin/documents/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  getMemberDocuments: async (memberId) => {
+    const response = await api.get(`/admin/documents/member/${memberId}`);
+    return response.data;
+  },
+
+  deleteDocument: async (documentId) => {
+    const response = await api.delete(`/admin/documents/${documentId}`);
+    return response.data;
   }
 };

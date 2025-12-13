@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { memberService } from '../../services/memberService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { useLanguage } from '../../context/LanguageContext';
 import Loader from '../common/Loader';
 import StyledTable from '../common/StyledTable';
-import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, DollarSign, Users, FileText } from 'lucide-react';
 
 const MemberDashboard = () => {
   const { t } = useLanguage();
@@ -35,9 +36,34 @@ const MemberDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Welcome, {dashboard.memberName}</h1>
-          <p className="text-gray-600 mt-2">Phone: {dashboard.phone}</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Welcome, {dashboard.memberName}</h1>
+            <p className="text-gray-600 mt-2">Phone: {dashboard.phone}</p>
+          </div>
+          <div className="flex space-x-2">
+            <Link
+              to="/member/family"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            >
+              <Users size={20} />
+              <span>My Family</span>
+            </Link>
+            <Link
+              to="/member/documents"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            >
+              <FileText size={20} />
+              <span>My Documents</span>
+            </Link>
+            <Link
+              to="/member/family-documents"
+              className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+            >
+              <FileText size={20} />
+              <span>Family Documents</span>
+            </Link>
+          </div>
         </div>
         {/* Removed View My VDF Account quick link as requested */}
       </div>

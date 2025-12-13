@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
+import { vdfService } from '../../services/vdfService';
+import { useAuth } from '../../context/AuthContext';
 import { X, Key } from 'lucide-react';
 
 const MemberForm = ({ member, onClose }) => {
+  const { isAuthenticated: isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
-    pin: ''
+    pin: '',
+    dateOfBirth: '',
+    aadharNo: '',
+    voterNo: '',
+    panNo: '',
+    familyId: ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPinGenerator, setShowPinGenerator] = useState(false);
+  const [families, setFamilies] = useState([]);
 
   useEffect(() => {
     if (member) {
@@ -19,10 +28,25 @@ const MemberForm = ({ member, onClose }) => {
         firstName: member.firstName || '',
         lastName: member.lastName || '',
         phone: member.phone || '',
-        pin: member.pin || ''
+        pin: member.pin || '',
+        dateOfBirth: member.dateOfBirth || '',
+        aadharNo: member.aadharNo || '',
+        voterNo: member.voterNo || '',
+        panNo: member.panNo || '',
+        familyId: member.familyId || ''
       });
     }
+    fetchFamilies();
   }, [member]);
+
+  const fetchFamilies = async () => {
+    try {
+      const data = await vdfService.getAllFamilies(false);
+      setFamilies(data || []);
+    } catch (error) {
+      console.error('Error fetching families:', error);
+    }
+  };
 
   const generateRandomPin = () => {
     const pin = Math.floor(1000 + Math.random() * 9000).toString();
@@ -69,6 +93,16 @@ const MemberForm = ({ member, onClose }) => {
     // PIN validation - optional, but if provided must be 4 digits
     if (formData.pin && !/^\d{4}$/.test(formData.pin)) {
       newErrors.pin = 'PIN must be exactly 4 digits';
+    }
+
+    // Aadhar validation - optional, but if provided must be 12 digits
+    if (formData.aadharNo && !/^\d{12}$/.test(formData.aadharNo)) {
+      newErrors.aadharNo = 'Aadhar number must be 12 digits';
+    }
+
+    // PAN validation - optional, but if provided must be in format ABCDE1234F
+    if (formData.panNo && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNo)) {
+      newErrors.panNo = 'PAN must be in format ABCDE1234F';
     }
 
     setErrors(newErrors);
@@ -217,6 +251,105 @@ const MemberForm = ({ member, onClose }) => {
 )}
             </p>
           </div>
+
+          {/* Admin-only fields */}
+          {isAdmin && (
+            <>
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Personal Information (Admin Only)</h4>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Aadhar Number
+                  </label>
+                  <input
+                    type="text"
+                    name="aadharNo"
+                    value={formData.aadharNo}
+                    onChange={handleChange}
+                    placeholder="123456789012"
+                    maxLength="12"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      errors.aadharNo ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.aadharNo && (
+                    <p className="text-red-500 text-xs mt-1">{errors.aadharNo}</p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Voter Number
+                  </label>
+                  <input
+                    type="text"
+                    name="voterNo"
+                    value={formData.voterNo}
+                    onChange={handleChange}
+                    placeholder="Voter ID"
+                    maxLength="20"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    PAN Number
+                  </label>
+                  <input
+                    type="text"
+                    name="panNo"
+                    value={formData.panNo}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase();
+                      setFormData(prev => ({ ...prev, panNo: value }));
+                    }}
+                    placeholder="ABCDE1234F"
+                    maxLength="10"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      errors.panNo ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.panNo && (
+                    <p className="text-red-500 text-xs mt-1">{errors.panNo}</p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Family (VDF)
+                  </label>
+                  <select
+                    name="familyId"
+                    value={formData.familyId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">No Family</option>
+                    {families.map(family => (
+                      <option key={family.id} value={family.id}>
+                        {family.familyHeadName} ({family.memberName})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex items-center space-x-2">
             <input

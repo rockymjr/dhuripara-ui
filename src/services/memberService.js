@@ -62,5 +62,47 @@ export const memberService = {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     return response.data;
+  },
+
+  getFamilyDetails: async () => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get('/member/family-details', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  },
+
+  // Documents
+  getMyDocuments: async () => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get('/member/documents/my-documents', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  },
+
+  getFamilyDocuments: async () => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get('/member/documents/family-documents', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  },
+
+  downloadDocument: async (documentId) => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get(`/member/documents/${documentId}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  getDocumentUrl: async (documentId) => {
+    const token = localStorage.getItem('memberToken');
+    const response = await api.get(`/member/documents/${documentId}/url`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
   }
 };

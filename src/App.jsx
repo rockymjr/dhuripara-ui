@@ -38,6 +38,9 @@ import VdfDepositManagement from './components/vdf/VdfDepositManagement';
 // Member Pages
 import MemberDashboard from './components/member/MemberDashboard';
 import MemberAccount from './components/member/MemberAccount';
+import FamilyDetails from './components/member/FamilyDetails';
+import MyDocuments from './components/member/MyDocuments';
+import FamilyDocuments from './components/member/FamilyDocuments';
 import GraminBank from './components/admin/GraminBank';
 
 function App() {
@@ -89,8 +92,12 @@ function RouterWrapper() {
         {/* Auth / Login */}
         <Route path="/login" element={<UnifiedLogin />} />
 
-        {/* Admin banking */}
-        <Route path="/admin/gramin-bank" element={isOperator ? <GraminBank /> : <ProtectedRoute><GraminBank /></ProtectedRoute>} />
+        {/* Admin banking - accessible to admin, operator, and members */}
+        <Route path="/admin/gramin-bank" element={
+          isOperator ? <GraminBank /> : 
+          <ProtectedRoute><GraminBank /></ProtectedRoute>
+        } />
+        <Route path="/member/bank" element={<MemberProtectedRoute><GraminBank /></MemberProtectedRoute>} />
         <Route path="/admin/dashboard" element={<Navigate to="/admin/members" replace />} />
         <Route path="/admin/members" element={isOperator ? <MemberManagement readOnly={true} /> : <ProtectedRoute><MemberManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/deposits" element={isOperator ? <DepositManagement readOnly={true} /> : <ProtectedRoute><DepositManagement readOnly={false} /></ProtectedRoute>} />
@@ -107,6 +114,9 @@ function RouterWrapper() {
         {/* Member */}
         <Route path="/member/dashboard" element={<MemberProtectedRoute><MemberDashboard /></MemberProtectedRoute>} />
         <Route path="/member/account" element={<MemberProtectedRoute><MemberAccount /></MemberProtectedRoute>} />
+        <Route path="/member/family" element={<MemberProtectedRoute><FamilyDetails /></MemberProtectedRoute>} />
+        <Route path="/member/documents" element={<MemberProtectedRoute><MyDocuments /></MemberProtectedRoute>} />
+        <Route path="/member/family-documents" element={<MemberProtectedRoute><FamilyDocuments /></MemberProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

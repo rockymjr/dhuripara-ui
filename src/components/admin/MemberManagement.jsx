@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../../services/adminService';
 import { useLanguage } from '../../context/LanguageContext';
-import { Search, UserPlus, Edit, Trash2, Unlock, Monitor } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, Unlock, Monitor, FileText } from 'lucide-react';
 import Loader from '../common/Loader';
 import MemberForm from './MemberForm';
+import DocumentUpload from './DocumentUpload';
 import { formatDate } from '../../utils/dateFormatter';
 import { useMemberAuth } from '../../context/MemberAuthContext';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +18,8 @@ const MemberManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [selectedMemberForDocument, setSelectedMemberForDocument] = useState(null);
   const { isOperator } = useMemberAuth();
   const { isAuthenticated: isAdmin } = useAuth();
 
@@ -90,6 +93,16 @@ const MemberManagement = () => {
     if (shouldRefresh) {
       fetchMembers();
     }
+  };
+
+  const handleUploadDocument = (member) => {
+    setSelectedMemberForDocument(member);
+    setShowDocumentUpload(true);
+  };
+
+  const handleDocumentUploadClose = () => {
+    setShowDocumentUpload(false);
+    setSelectedMemberForDocument(null);
   };
 
   const formatBlockedUntil = (blockedUntil) => {
@@ -235,6 +248,15 @@ const MemberManagement = () => {
               {!isOperator && (
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleUploadDocument(member)}
+                        className="text-purple-600 hover:text-purple-900"
+                        title="Upload Document"
+                      >
+                        <FileText size={18} />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleEdit(member)}
                       className="text-blue-600 hover:text-blue-900"
@@ -272,6 +294,13 @@ const MemberManagement = () => {
         <MemberForm
           member={editingMember}
           onClose={handleFormClose}
+        />
+      )}
+      {showDocumentUpload && selectedMemberForDocument && (
+        <DocumentUpload
+          memberId={selectedMemberForDocument.id}
+          memberName={`${selectedMemberForDocument.firstName} ${selectedMemberForDocument.lastName}`}
+          onClose={handleDocumentUploadClose}
         />
       )}
     </div>
