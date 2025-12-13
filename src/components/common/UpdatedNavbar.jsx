@@ -89,7 +89,7 @@ const UpdatedNavbar = () => {
             <LanguageSwitcher />
             {(isAdmin || isMember) ? (
               <div className="flex items-center space-x-2">
-                <div className="text-sm md:text-base font-bold"> Welcome {isAdmin ? adminUsername : memberName}</div>
+                <div className="text-sm md:text-base font-bold"> Welcome { memberName}</div>
                 <button onClick={() => (isAdmin ? handleAdminLogout() : handleMemberLogout())} className="ml-1 px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white" title={t('logout')} aria-label={t('logout')}>
                   <LogOut size={16} />
                 </button>
@@ -120,7 +120,7 @@ const UpdatedNavbar = () => {
                     )}
                   </button>
                 )}
-                <div className="text-green-200 text-sm mr-2">{isAdmin ? `${t('admin')}: ${adminUsername}` : memberName}</div>
+                <div className="text-green-200 text-sm mr-2">Welcome {memberName}</div>
                 <button onClick={() => (isAdmin ? handleAdminLogout() : handleMemberLogout())} className="ml-1 px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white" title={t('logout')} aria-label={t('logout')}>
                   <LogOut size={16} />
                 </button>
@@ -165,7 +165,7 @@ const UpdatedNavbar = () => {
           )}
 
           {/* Admin/Operator: Members button and Admin Dashboard */}
-          {(showAdminMenu || showOperatorMenu) && (
+          {(showAdminMenu) && (
             <>
               <Link to="/admin/dashboard" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-gray-700 hover:bg-gray-800 transition px-1" title={t('admin')}>
                 <Package size={22} />
@@ -203,7 +203,7 @@ const UpdatedNavbar = () => {
               <span className="text-[11px] text-white mt-1">{t('graminBank')}</span>
             </Link>
           )}
-          {(showAdminMenu || showOperatorMenu) && (
+          {(showAdminMenu) && (
             <Link to="/admin/dashboard" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-gray-700 hover:bg-gray-800 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('admin')}>
               <Package size={18} />
               <span className="text-[11px] text-white mt-1">{t('admin') || 'Admin'}</span>

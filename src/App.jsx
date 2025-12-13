@@ -123,10 +123,10 @@ function RouterWrapper() {
 
         {/* Member */}
         <Route path="/member/dashboard" element={<MemberProtectedRoute><UnifiedMemberAccount /></MemberProtectedRoute>} />
-        <Route path="/member/account" element={<MemberProtectedRoute><RedirectMemberSection section="account" /></MemberProtectedRoute>} />
-        <Route path="/member/family" element={<MemberProtectedRoute><RedirectMemberSection section="family-documents" /></MemberProtectedRoute>} />
-        <Route path="/member/documents" element={<MemberProtectedRoute><RedirectMemberSection section="documents" /></MemberProtectedRoute>} />
-        <Route path="/member/family-documents" element={<MemberProtectedRoute><RedirectMemberSection section="family-documents" /></MemberProtectedRoute>} />
+        <Route path="/member/account" element={<MemberProtectedRoute><MemberAccount /></MemberProtectedRoute>} />
+        <Route path="/member/family" element={<MemberProtectedRoute><FamilyDetails /></MemberProtectedRoute>} />
+        <Route path="/member/documents" element={<MemberProtectedRoute><MyDocuments /></MemberProtectedRoute>} />
+        <Route path="/member/family-documents" element={<MemberProtectedRoute><FamilyDocuments /></MemberProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

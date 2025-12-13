@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { LogIn, AlertCircle } from 'lucide-react';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [pin, setPin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,11 +18,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const result = await login(username, password);
+      // Admin login should use password
+      const result = await login(phone, null, password);
       if (result.success) {
         navigate('/admin/dashboard');
       } else {
-        setError(result.error || 'Invalid credentials');
+          setError(result.error || 'Invalid credentials');
       }
     } catch (err) {
       setError('Login failed. Please try again.');
@@ -50,31 +52,31 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Enter username"
-              required
-            />
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="9876543210"
+                required
+              />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+                Password
             </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Enter password"
+                placeholder="Enter your password"
               required
             />
           </div>

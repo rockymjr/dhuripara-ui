@@ -39,10 +39,6 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Manage your village fund system</p>
-      </div>
 
       {memberId ? (
         // If a memberId query param is present, show the UnifiedMemberAccount (admin view).

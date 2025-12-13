@@ -27,11 +27,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (username, password) => {
+  const login = async (phone, pin, password) => {
     try {
-      const response = await authService.login(username, password);
+      const response = await authService.login(phone, pin, password);
       setIsAuthenticated(true);
-      setUsername(response.username);
+      setUsername(response.memberName || response.username);
       return { success: true };
     } catch (error) {
       return { 

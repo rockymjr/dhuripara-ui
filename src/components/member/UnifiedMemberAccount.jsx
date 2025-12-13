@@ -60,10 +60,8 @@ const UnifiedMemberAccount = ({ readOnly }) => {
       <div className="mb-8">
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              {isAdminView ? (t('memberStatement') || 'Member Statement') : `Welcome, ${memberName}`}
-            </h1>
-            <p className="text-gray-600 mt-2">Phone: {phone}</p>
+             <p className="font-semibold text-gray-800 mb-3">{memberName} ({phone})</p>
+
           </div>
           
           {/* Navigation Buttons - Only show for members, not admin view */}

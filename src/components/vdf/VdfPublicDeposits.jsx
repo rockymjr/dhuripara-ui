@@ -155,7 +155,10 @@ const VdfPublicDeposits = () => {
 
   // Filter deposits by selected category and member
   const filteredDeposits = deposits.filter(d => {
-    const catMatch = selectedCategory === 'all' || (d.categoryName || d.category?.categoryName || 'Uncategorized') === selectedCategory;
+    // Determine a canonical category key for the deposit: prefer categoryId, then category.id, then categoryName
+    const depositCatKey = String(d.categoryId || (d.category && d.category.id) || (d.categoryName || d.category?.categoryName || 'Uncategorized'));
+    const selCatKey = String(selectedCategory);
+    const catMatch = selectedCategory === 'all' || depositCatKey === selCatKey;
     // selectedMember is a string UUID (e.g., "10aed26e-dc80-4313-ba00-2f5f30d62290")
     // memberId in deposit is also a UUID string
     const memberMatch = selectedMember === 'all' || (d.memberId && d.memberId === selectedMember);
