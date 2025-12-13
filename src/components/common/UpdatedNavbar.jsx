@@ -153,7 +153,7 @@ const UpdatedNavbar = () => {
             (() => {
               // Admins who are also members should be routed to their member dashboard (admin view)
               const adminMemberId = isAdmin ? localStorage.getItem('memberId') : null;
-              const myAccHref = isAdmin ? (adminMemberId ? `/member/dashboard?memberId=${adminMemberId}` : '/admin/dashboard') : '/member/dashboard';
+              const myAccHref = isAdmin ? (adminMemberId ? `/member/dashboard?memberId=${adminMemberId}` : `/member/dashboard?adminView=true&adminUsername=${encodeURIComponent(adminUsername)}`) : '/member/dashboard';
               return (
                 <Link to={myAccHref} className="flex items-center justify-center w-20 h-16 rounded bg-sky-600 hover:bg-sky-700 transition px-1" title={t('dashboard')}>
                   <span className="text-xs text-white">{t('myAccBtn')}</span>

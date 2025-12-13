@@ -5,6 +5,7 @@ import { adminService } from '../../services/adminService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/dateFormatter';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { useMemberAuth } from '../../context/MemberAuthContext';
 import Loader from '../common/Loader';
 import StyledTable from '../common/StyledTable';
@@ -13,6 +14,7 @@ import { Wallet, TrendingUp, TrendingDown, DollarSign, Users } from 'lucide-reac
 const UnifiedMemberAccount = ({ readOnly }) => {
   const { t } = useLanguage();
   const { isAuthenticated: isMember } = useMemberAuth() || {};
+  const { isAuthenticated: isAdmin, username: adminUsername } = useAuth();
   const [searchParams] = useSearchParams();
   const memberIdFromQuery = searchParams.get('memberId');
   
@@ -48,6 +50,39 @@ const UnifiedMemberAccount = ({ readOnly }) => {
         } finally {
           setLoadingDocs(false);
         }
+      } else if (searchParams.get('adminView') && isAdmin) {
+        // Admin clicked My Account but memberId was not available in localStorage.
+        // Try to resolve member by admin username passed as query param.
+        const adminUser = searchParams.get('adminUsername') || adminUsername;
+        if (adminUser) {
+          try {
+            const members = await adminService.getAllMembers(adminUser);
+            if (Array.isArray(members) && members.length > 0) {
+              const member = members[0];
+              setIsAdminView(true);
+              const statement = await adminService.getMemberStatement(member.id, null);
+              setData(statement);
+              // fetch member documents for admin view
+              try {
+                setLoadingDocs(true);
+                const docs = await adminService.getMemberDocuments(member.id);
+                setMemberDocuments(docs || []);
+              } catch (err) {
+                console.error('Failed to fetch member documents', err);
+                setMemberDocuments([]);
+              } finally {
+                setLoadingDocs(false);
+              }
+              return;
+            }
+          } catch (err) {
+            console.error('Failed to resolve admin member by username', err);
+          }
+        }
+        // fallback to admin summary if we couldn't resolve
+        setIsAdminView(false);
+        const dashboard = await memberService.getDashboard();
+        setData(dashboard);
       } else {
         // Member viewing their own dashboard
         setIsAdminView(false);
@@ -85,25 +120,25 @@ const UnifiedMemberAccount = ({ readOnly }) => {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/member/account"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-sm transition"
               >
                 <span>My VDF</span>
               </Link>
               <Link
                 to="/member/bank"
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded-lg text-sm transition"
               >
                 <span>My Bank</span>
               </Link>
               <Link
                 to="/member/documents"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-sm transition"
               >
                 <span>My Documents</span>
               </Link>
               <Link
                 to="/member/family-documents"
-                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 rounded-lg text-sm transition"
               >
                 <span>Family Documents</span>
               </Link>

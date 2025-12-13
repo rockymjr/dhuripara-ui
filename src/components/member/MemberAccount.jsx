@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { memberService } from '../../services/memberService';
 import Loader from '../common/Loader';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatDate } from '../../utils/dateFormatter';
 import StyledTable from '../common/StyledTable';
 
@@ -10,6 +11,7 @@ const MemberAccount = () => {
   const [account, setAccount] = useState(null);
   const [selectedYear, setSelectedYear] = useState('all');
   const [availableYears, setAvailableYears] = useState([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchAccount();
@@ -92,7 +94,7 @@ const MemberAccount = () => {
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Date</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Amount</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Month</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Notes</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">{t('source') || 'Source'}</th>
             </>
           )}
         >
@@ -101,7 +103,15 @@ const MemberAccount = () => {
               <td className="px-6 py-4 whitespace-nowrap text-sm">{formatDate(c.paymentDate)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{formatCurrency(c.amount)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">{c.month}/{c.year}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm">{c.notes || '-'}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                {Array.isArray(c.monthAllocations) && c.monthAllocations.length > 0 ? (
+                  <div className="text-sm text-gray-700">
+                    {c.monthAllocations.map((m, i) => (
+                      <span key={i} className="inline-block mr-2">{m.month}: {formatCurrency(m.amount)}</span>
+                    ))}
+                  </div>
+                ) : '-'}
+              </td>
             </tr>
           ))}
         </StyledTable>
