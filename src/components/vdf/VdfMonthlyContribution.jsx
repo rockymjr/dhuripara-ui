@@ -195,19 +195,19 @@ const VdfMonthlyContribution = () => {
               <div className="flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-8 text-sm flex-shrink-0 w-full md:w-auto md:ml-4">
                 {/* Column 1: Total Paid (All-time) */}
                 <div className="text-left md:text-right w-auto md:w-32">
-                  <p className="text-gray-500 text-xs mb-1 font-medium">Total Paid</p>
+                  <p className="text-gray-500 text-xs mb-1 font-medium">{t('totalPaid')} </p>
                   <p className="font-semibold text-green-600 text-sm">{formatCurrency(family.totalPaidAllTime || 0)}</p>
                 </div>
 
                 {/* Column 2: Total Due (All-time) */}
                 <div className="text-left md:text-right w-auto md:w-32">
-                  <p className="text-gray-500 text-xs mb-1 font-medium">Total Due</p>
+                  <p className="text-gray-500 text-xs mb-1 font-medium">{t('totalDues')}</p>
                   <p className="font-semibold text-red-600 text-sm">{formatCurrency(family.totalDueAllTime || 0)}</p>
                 </div>
 
                 {/* Column 3: This Year Paid */}
                 <div className="text-left md:text-right w-auto md:w-32">
-                  <p className="text-gray-500 text-xs mb-1 font-medium">{selectedYear} Paid</p>
+                  <p className="text-gray-500 text-xs mb-1 font-medium"> {selectedYear} {t('paid')}</p>
                   <p className="font-semibold text-purple-600 text-sm">{formatCurrency(family.totalPaid || 0)}</p>
                 </div>
 

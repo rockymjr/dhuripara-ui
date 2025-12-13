@@ -6,8 +6,10 @@ import { useMemberAuth } from '../../context/MemberAuthContext';
 import { memberService } from '../../services/memberService';
 import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Home, User, LogOut, Users as UsersIcon, TrendingUp, TrendingDown, 
-         Package, DollarSign, Calendar, Gift, Bell, Wallet } from 'lucide-react';
+import {
+  Home, User, LogOut, Users as UsersIcon, TrendingUp, TrendingDown,
+  Package, DollarSign, Calendar, Gift, Bell, Wallet
+} from 'lucide-react';
 import VdfNotifications from '../vdf/VdfNotifications';
 
 const UpdatedNavbar = () => {
@@ -87,7 +89,7 @@ const UpdatedNavbar = () => {
             <LanguageSwitcher />
             {(isAdmin || isMember) ? (
               <div className="flex items-center space-x-2">
-                <div className="text-sm md:text-base font-bold">{isAdmin ? `${t('admin')}: ${adminUsername}` : memberName}</div>
+                <div className="text-sm md:text-base font-bold"> Welcome {isAdmin ? adminUsername : memberName}</div>
                 <button onClick={() => (isAdmin ? handleAdminLogout() : handleMemberLogout())} className="ml-1 px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white" title={t('logout')} aria-label={t('logout')}>
                   <LogOut size={16} />
                 </button>
@@ -135,28 +137,28 @@ const UpdatedNavbar = () => {
         </div>
 
         {/* VDF Quick Access Buttons (desktop) - visible to everyone */}
-          <div className="hidden md:flex items-center gap-2 mt-3 overflow-x-auto">
-          <Link to="/" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-gray-700 hover:bg-gray-800 transition px-1" title={t('home')}>
+        <div className="hidden md:flex items-center gap-2 mt-3 overflow-x-auto">
+          <Link to="/" className="flex flex-col items-center justify-center w-20 h-16 rounded bg-gray-700 hover:bg-gray-800 transition px-1" title={t('home')}>
             <Home size={22} />
-            <span className="text-xs text-white mt-1">{t('home')}</span>
+            <span className="text-xs text-white mt-1">{t('summaryBtn')}</span>
           </Link>
 
           <Link to="/vdf" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-indigo-600 hover:bg-indigo-700 transition px-1" title={t('vdf')}>
             <Package size={22} />
-            <span className="text-xs text-white mt-1">{t('vdfButton')}</span>
+            <span className="text-xs text-white mt-1">{t('vdfBtn')}</span>
           </Link>
 
           {/* Member-only: My Dashboard */}
           {showMemberMenu && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-sky-600 hover:bg-sky-700 transition px-1" title={t('dashboard')}>
+            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-20 h-16 rounded bg-sky-600 hover:bg-sky-700 transition px-1" title={t('dashboard')}>
               <Wallet size={22} />
-              <span className="text-xs text-white mt-1">{t('dashboard')}</span>
+              <span className="text-xs text-white mt-1">{t('myAccBtn')}</span>
             </Link>
           )}
 
           {/* Admin/Operator/Member: Gramin Bank button */}
-            {(showAdminMenu || showOperatorMenu || showMemberMenu) && (
-            <Link to={showMemberMenu ? "/member/dashboard?section=bank" : "/admin/gramin-bank"} className="flex flex-col items-center justify-center w-16 h-16 rounded bg-yellow-600 hover:bg-yellow-700 transition px-1" title={t('graminBank')}>
+          {(showAdminMenu || showOperatorMenu) && (
+            <Link to="/admin/gramin-bank" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-yellow-600 hover:bg-yellow-700 transition px-1" title={t('graminBank')}>
               <Package size={22} />
               <span className="text-xs text-white mt-1">{t('graminBank')}</span>
             </Link>
@@ -169,46 +171,42 @@ const UpdatedNavbar = () => {
                 <Package size={22} />
                 <span className="text-xs text-white mt-1">{t('admin') || 'Admin'}</span>
               </Link>
-              <Link to="/admin/members" className="flex flex-col items-center justify-center w-16 h-16 rounded bg-purple-600 hover:bg-purple-700 transition px-1" title={t('members')}>
-                <UsersIcon size={22} />
-                <span className="text-xs text-white mt-1">{t('members')}</span>
-              </Link>
+
             </>
           )}
 
         </div>
 
         {/* Mobile quick-access buttons */}
-          <div className="flex md:hidden items-center space-x-3 mt-3 overflow-x-auto px-1 py-1">
-          <Link to="/" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-gray-700 hover:bg-gray-800 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('home')}>
+        <div className="flex md:hidden items-center space-x-3 mt-3 overflow-x-auto px-1 py-1">
+          <Link to="/" className="flex flex-col items-center justify-center w-14 h-12 rounded border border-white/20 bg-gray-700 hover:bg-gray-800 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('home')}>
             <Home size={18} />
-            <span className="text-[11px] text-white mt-1">{t('home')}</span>
+            <span className="text-[11px] text-white mt-1">{t('summaryBtn')}</span>
           </Link>
 
           <Link to="/vdf" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-indigo-600 hover:bg-indigo-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('vdf')}>
             <Package size={18} />
-            <span className="text-[11px] text-white mt-1">{t('vdfButton')}</span>
+            <span className="text-[11px] text-white mt-1">{t('vdfBtn')}</span>
           </Link>
 
           {/* Member-only: My Dashboard (mobile) */}
           {showMemberMenu && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-sky-600 hover:bg-sky-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('dashboard')}>
+            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-18 h-12 rounded border border-white/20 bg-sky-600 hover:bg-sky-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('dashboard')}>
               <Wallet size={18} />
-              <span className="text-[11px] text-white mt-1">{t('dashboard')}</span>
-            </Link>
-          )}
-
-          {(showAdminMenu || showOperatorMenu || showMemberMenu) && (
-            <Link to={showMemberMenu ? "/member/dashboard?section=bank" : "/admin/gramin-bank"} className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-yellow-600 hover:bg-yellow-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('graminBank')}>
-              <Package size={18} />
-              <span className="text-[11px] text-white mt-1">{t('bank')}</span>
+              <span className="text-[11px] text-white mt-1">{t('myAccBtn')}</span>
             </Link>
           )}
 
           {(showAdminMenu || showOperatorMenu) && (
-            <Link to="/admin/members" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-purple-600 hover:bg-purple-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('members')}>
-              <UsersIcon size={18} />
-              <span className="text-[11px] text-white mt-1">{t('members')}</span>
+            <Link to="/admin/gramin-bank" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-yellow-600 hover:bg-yellow-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('graminBank')}>
+              <Package size={18} />
+              <span className="text-[11px] text-white mt-1">{t('graminBank')}</span>
+            </Link>
+          )}
+          {(showAdminMenu || showOperatorMenu) && (
+            <Link to="/admin/dashboard" className="flex flex-col items-center justify-center w-12 h-12 rounded border border-white/20 bg-gray-700 hover:bg-gray-800 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('admin')}>
+              <Package size={18} />
+              <span className="text-[11px] text-white mt-1">{t('admin') || 'Admin'}</span>
             </Link>
           )}
 
@@ -224,7 +222,7 @@ const UpdatedNavbar = () => {
             import('../../services/vdfNotificationService').then(({ vdfNotificationService }) => {
               vdfNotificationService.getUnreadNotifications()
                 .then(unread => setUnreadNotificationCount(unread.length))
-                .catch(() => {});
+                .catch(() => { });
             });
           }}
         />

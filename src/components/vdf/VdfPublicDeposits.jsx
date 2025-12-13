@@ -13,10 +13,11 @@ import Loader from '../common/Loader';
 import VdfDepositForm from './VdfDepositForm';
 
 const VdfPublicDeposits = () => {
+  const currentYear = new Date().getFullYear();
   const [deposits, setDeposits] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMember, setSelectedMember] = useState('all');
   const [showForm, setShowForm] = useState(false);
@@ -25,7 +26,6 @@ const VdfPublicDeposits = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  const currentYear = new Date().getFullYear();
 
   // On mount: fetch members, summary, and deposits.
   useEffect(() => {
@@ -186,15 +186,18 @@ const VdfPublicDeposits = () => {
 
   // Group filtered deposits by category
   const depositsByCategory = {};
-  const allCategories = new Set();
+  // map of category id (or name fallback) -> {id, en, bn}
+  const categoriesMap = new Map();
   
   filteredDeposits.forEach(d => {
-    const cat = d.categoryName || d.category?.categoryName || 'Uncategorized';
-    allCategories.add(cat);
-    if (!depositsByCategory[cat]) {
-      depositsByCategory[cat] = 0;
+    const id = d.categoryId || (d.category && d.category.id) || (d.categoryName || d.category?.categoryName || 'Uncategorized');
+    const en = d.categoryName || d.category?.categoryName || 'Uncategorized';
+    const bn = d.categoryNameBn || (d.category && d.category.categoryNameBn) || en;
+    categoriesMap.set(id, { id, en, bn });
+    if (!depositsByCategory[id]) {
+      depositsByCategory[id] = 0;
     }
-    depositsByCategory[cat] += d.amount;
+    depositsByCategory[id] += d.amount;
   });
 
   const availableYearsOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -223,7 +226,7 @@ const VdfPublicDeposits = () => {
         {/* Total Deposits Card */}
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
           <h3 className="text-sm font-medium opacity-90">Total Deposits</h3>
-          <p className="text-3xl font-bold mt-2">{formatCurrency(totalDeposits)}</p>
+          <p className="text-3xl font-bold mt-2">{formatCurrency(totalDeposits, language)}</p>
           <p className="text-xs mt-2 opacity-75">{selectedYear === 'all' ? 'All Years' : selectedYear}</p>
         </div>
 
@@ -252,7 +255,7 @@ const VdfPublicDeposits = () => {
                     return (
                       <tr key={category} className="hover:bg-gray-50 transition">
                         <td className="px-4 py-3 font-medium text-gray-900">{category}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-green-600">{formatCurrency(amount)}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-green-600">{formatCurrency(amount, language)}</td>
                         <td className="px-4 py-3 text-right text-gray-600">{percentage}%</td>
                       </tr>
                     );
@@ -280,13 +283,14 @@ const VdfPublicDeposits = () => {
               className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
             >
               <option value="all">All Categories</option>
-              {Array.from(allCategories)
-                .sort()
+              {Array.from(categoriesMap.values())
+                .sort((a, b) => a.en.localeCompare(b.en))
                 .map(cat => {
-                  const count = filteredDeposits.filter(d => (d.categoryName || d.category?.categoryName || 'Uncategorized') === cat).length;
+                  const count = filteredDeposits.filter(d => ((d.categoryId || (d.category && d.category.id) || d.categoryName || d.category?.categoryName || 'Uncategorized') === (cat.id || cat.en))).length;
+                  const label = language === 'bn' ? cat.bn : cat.en;
                   return (
-                    <option key={cat} value={cat}>
-                      {cat} ({count})
+                    <option key={cat.id || cat.en} value={cat.id || cat.en}>
+                      {label} ({count})
                     </option>
                   );
                 })}
@@ -372,7 +376,7 @@ const VdfPublicDeposits = () => {
                       {language === 'bn' ? (deposit.sourceNameBn || deposit.sourceName || '-') : (deposit.sourceName || '-')}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-green-600 whitespace-nowrap text-xs sm:text-sm">
-                      {formatCurrency(deposit.amount)}
+                      {formatCurrency(deposit.amount, language)}
                     </td>
                     {isAdmin && (
                       <td className="px-4 py-3 text-center">
@@ -409,7 +413,7 @@ const VdfPublicDeposits = () => {
                 Showing {filteredDeposits.length} of {deposits.length} deposits
               </span>
               <span className="text-sm font-bold text-green-600">
-                Filtered Total: {formatCurrency(filteredDeposits.reduce((sum, d) => sum + (d.amount || 0), 0))}
+                Filtered Total: {formatCurrency(filteredDeposits.reduce((sum, d) => sum + (d.amount || 0), 0), language)}
               </span>
             </div>
           </div>

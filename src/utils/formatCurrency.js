@@ -1,7 +1,7 @@
-export const formatCurrency = (amount) => {
+export const formatCurrency = (amount, language = 'en') => {
   if (amount === null || amount === undefined) return '₹0.00';
-  
-  return new Intl.NumberFormat('en-IN', {
+  const locale = language === 'bn' ? 'bn-IN' : 'en-IN';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 2

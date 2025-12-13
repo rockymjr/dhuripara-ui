@@ -29,25 +29,11 @@ const Dashboard = () => {
       color: 'bg-red-500'
     },
     {
-      title: 'Member Statements',
-      description: 'View member transaction history',
-      icon: FileText,
-      link: '/admin/dashboard',
-      color: 'bg-purple-500'
-    },
-    {
       title: 'Families',
       description: 'Manage VDF families',
       icon: Users,
       link: '/admin/vdf/families',
       color: 'bg-green-500'
-    },
-    {
-      title: 'Yearly Reports',
-      description: 'View settlement reports',
-      icon: Calendar,
-      link: '/admin/reports',
-      color: 'bg-orange-500'
     }
   ];
 
