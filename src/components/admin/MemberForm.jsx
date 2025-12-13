@@ -15,7 +15,8 @@ const MemberForm = ({ member, onClose }) => {
     aadharNo: '',
     voterNo: '',
     panNo: '',
-    familyId: ''
+    familyId: '',
+    role: 'MEMBER'
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -29,6 +30,7 @@ const MemberForm = ({ member, onClose }) => {
         lastName: member.lastName || '',
         phone: member.phone || '',
         pin: member.pin || '',
+        role: member.role || 'MEMBER',
         dateOfBirth: member.dateOfBirth || '',
         aadharNo: member.aadharNo || '',
         voterNo: member.voterNo || '',
@@ -347,20 +349,25 @@ const MemberForm = ({ member, onClose }) => {
                     ))}
                   </select>
                 </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select
+                    name="role"
+                    value={formData.role || 'MEMBER'}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="MEMBER">MEMBER</option>
+                    <option value="OPERATOR">OPERATOR</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
               </div>
             </>
           )}
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name="isOperator"
-              checked={formData.isOperator}
-              onChange={(e) => setFormData(prev => ({ ...prev, isOperator: e.target.checked }))}
-              className="..."
-            />
-            <label className="text-sm">Make this member an Operator (view-only access)</label>
-          </div>
+          
 
           {formData.phone && formData.pin && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">

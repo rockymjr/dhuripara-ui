@@ -8,8 +8,7 @@ import UnifiedMemberAccount from '../member/UnifiedMemberAccount';
 
 const sections = [
     { key: 'loans', label: 'Loans' },
-    { key: 'deposits', label: 'Deposits' },
-    { key: 'account', label: 'My Account' }
+    { key: 'deposits', label: 'Deposits' }
 ];
 
 const loanFilters = [
@@ -67,8 +66,9 @@ const GraminBank = () => {
 
     const visibleSections = sections.filter(s => {
         if (s.key === 'account') {
-            return (isMember || isOperator) && hasBankActivity;
-        }
+                // Only actual members should see their account section; operators shouldn't see 'My Account'
+                return isMember && hasBankActivity;
+            }
         return true;
     });
 

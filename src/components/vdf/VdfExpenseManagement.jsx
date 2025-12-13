@@ -11,7 +11,7 @@ import VdfExpenseForm from './VdfExpenseForm';
 import { useAuth } from '../../context/AuthContext';
 
 const VdfExpenseManagement = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ const VdfExpenseManagement = () => {
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
   const expensesByCategory = (categories || []).map(cat => ({
-    name: cat.categoryName,
+    name: language === 'bn' ? (cat.categoryNameBn || cat.categoryName) : (cat.categoryName || cat.categoryNameBn),
     total: filteredExpenses
       .filter(exp => exp.categoryId === cat.id)
       .reduce((sum, exp) => sum + exp.amount, 0)
@@ -148,7 +148,7 @@ const VdfExpenseManagement = () => {
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.categoryName}</option>
+              <option key={cat.id} value={cat.id}>{language === 'bn' ? (cat.categoryNameBn || cat.categoryName) : (cat.categoryName || cat.categoryNameBn)}</option>
             ))}
           </select>
         </div>
@@ -216,11 +216,11 @@ const VdfExpenseManagement = () => {
                     <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
                     <td className="px-3 py-2">
                       <span className="inline-block px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-800 whitespace-nowrap">
-                        {expense.categoryName}
+                        {language === 'bn' ? (expense.categoryNameBn || expense.categoryName) : (expense.categoryName || expense.categoryNameBn)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
-                      {expense.description || '-'}
+                      {language === 'bn' ? (expense.descriptionBn || expense.description || '-') : (expense.description || '-')}
                     </td>
                     <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
                       {formatCurrency(expense.amount)}

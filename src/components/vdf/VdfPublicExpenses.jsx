@@ -83,15 +83,16 @@ const VdfPublicExpenses = () => {
     : expenses;
 
   const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  
-  // Calculate expenses by category
+
+  // Calculate expenses by category using filteredExpenses so totals reflect filters
   const expensesByCategory = {};
-  expenses.forEach(e => {
+  filteredExpenses.forEach(e => {
     const catKey = language === 'bn' ? (e.categoryNameBn || e.categoryName) : (e.categoryName || e.categoryNameBn);
-    if (!expensesByCategory[catKey]) {
-      expensesByCategory[catKey] = 0;
+    const key = catKey || 'Unknown';
+    if (!expensesByCategory[key]) {
+      expensesByCategory[key] = 0;
     }
-    expensesByCategory[catKey] += e.amount;
+    expensesByCategory[key] += e.amount || 0;
   });
 
   const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -144,11 +145,11 @@ const VdfPublicExpenses = () => {
         </div>
       </div>
 
-      {/* Expenses by Category 
+      {/* Expenses by Category */}
       {Object.keys(expensesByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow mb-4 overflow-hidden">
           <div className="px-3 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-sm font-semibold">
-            By {t('category')}
+            {t('expensesByCategory') || 'By Category'} ({selectedYear})
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -156,20 +157,24 @@ const VdfPublicExpenses = () => {
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-3 py-2 text-left font-semibold text-gray-700">Category</th>
                   <th className="px-3 py-2 text-right font-semibold text-gray-700">Amount</th>
+                  <th className="px-3 py-2 text-right font-semibold text-gray-700">% of Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {Object.entries(expensesByCategory).map(([category, amount]) => (
-                  <tr key={category} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 font-medium text-gray-900">{category}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(amount)}</td>
-                  </tr>
-                ))}
+                {Object.entries(expensesByCategory)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([category, amount]) => (
+                    <tr key={category} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 font-medium text-gray-900">{category}</td>
+                      <td className="px-3 py-2 text-right font-semibold text-orange-600">{formatCurrency(amount)}</td>
+                      <td className="px-3 py-2 text-right text-gray-600">{totalExpenses > 0 ? ((amount / totalExpenses) * 100).toFixed(1) + '%' : '0%'}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </div>
-      )}*/}
+      )}
 
       {/* Main Expenses Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

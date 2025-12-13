@@ -9,6 +9,9 @@ const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDocViewer, setShowDocViewer] = useState(false);
+  const [docViewerUrl, setDocViewerUrl] = useState('');
+  const [docViewerTitle, setDocViewerTitle] = useState('');
 
   useEffect(() => {
     fetchDocuments();
@@ -46,8 +49,15 @@ const MyDocuments = () => {
 
   const handleView = async (documentId) => {
     try {
-      const url = await memberService.getDocumentUrl(documentId);
-      window.open(url, '_blank');
+      const res = await memberService.getDocumentUrl(documentId);
+      const url = res?.url || res;
+      if (url) {
+        setDocViewerUrl(url);
+        setDocViewerTitle('Document');
+        setShowDocViewer(true);
+      } else {
+        alert('Failed to fetch document URL');
+      }
     } catch (err) {
       console.error('Error getting document URL:', err);
       alert('Failed to open document');
@@ -143,6 +153,21 @@ const MyDocuments = () => {
               </tr>
             ))}
           </StyledTable>
+        </div>
+      )}
+      {/* Document Viewer Modal */}
+      {showDocViewer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-60" onClick={() => setShowDocViewer(false)} />
+          <div className="bg-white rounded-lg shadow-lg z-10 w-11/12 md:w-3/4 lg:w-4/5 max-h-[90vh] overflow-auto p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">{docViewerTitle}</h3>
+              <button className="text-gray-600" onClick={() => setShowDocViewer(false)}>Close</button>
+            </div>
+            <div className="w-full h-[80vh]">
+              <iframe title={docViewerTitle} src={docViewerUrl} className="w-full h-full" />
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -8,7 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useMemberAuth } from '../../context/MemberAuthContext';
 import Loader from '../common/Loader';
 import StyledTable from '../common/StyledTable';
-import { Wallet, TrendingUp, TrendingDown, DollarSign, Users, FileText, Building2, CreditCard } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, DollarSign, Users } from 'lucide-react';
 
 const UnifiedMemberAccount = ({ readOnly }) => {
   const { t } = useLanguage();
@@ -18,6 +18,11 @@ const UnifiedMemberAccount = ({ readOnly }) => {
   
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [memberDocuments, setMemberDocuments] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [showDocViewer, setShowDocViewer] = useState(false);
+  const [docViewerUrl, setDocViewerUrl] = useState('');
+  const [docViewerTitle, setDocViewerTitle] = useState('');
   const [isAdminView, setIsAdminView] = useState(false);
 
   useEffect(() => {
@@ -32,6 +37,17 @@ const UnifiedMemberAccount = ({ readOnly }) => {
         setIsAdminView(true);
         const statement = await adminService.getMemberStatement(memberIdFromQuery, null);
         setData(statement);
+        // fetch member documents for admin view
+        try {
+          setLoadingDocs(true);
+          const docs = await adminService.getMemberDocuments(memberIdFromQuery);
+          setMemberDocuments(docs || []);
+        } catch (err) {
+          console.error('Failed to fetch member documents', err);
+          setMemberDocuments([]);
+        } finally {
+          setLoadingDocs(false);
+        }
       } else {
         // Member viewing their own dashboard
         setIsAdminView(false);
@@ -69,34 +85,87 @@ const UnifiedMemberAccount = ({ readOnly }) => {
             <div className="flex flex-wrap gap-2">
               <Link
                 to="/member/account"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition"
               >
-                <Building2 size={20} />
                 <span>My VDF</span>
               </Link>
               <Link
                 to="/member/bank"
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition"
               >
-                <CreditCard size={20} />
                 <span>My Bank</span>
               </Link>
               <Link
                 to="/member/documents"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition"
               >
-                <FileText size={20} />
                 <span>My Documents</span>
               </Link>
               <Link
                 to="/member/family-documents"
-                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
+                className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition"
               >
-                <FileText size={20} />
                 <span>Family Documents</span>
               </Link>
             </div>
           )}
+
+            {/* Admin: Documents */}
+            {isAdminView && (
+              <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <h3 className="text-lg font-semibold mb-3">Documents</h3>
+                {loadingDocs ? (
+                  <div>Loading documents...</div>
+                ) : memberDocuments.length === 0 ? (
+                  <div className="text-gray-500">No documents found</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="text-left text-xs text-gray-600">
+                        <tr>
+                          <th className="px-2 py-1">Category</th>
+                          <th className="px-2 py-1">Notes</th>
+                          <th className="px-2 py-1">Uploaded</th>
+                          <th className="px-2 py-1">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {memberDocuments.map(doc => (
+                          <tr key={doc.id} className="hover:bg-gray-50">
+                            <td className="px-2 py-2">{doc.categoryName || doc.documentCategoryName || '-'}</td>
+                            <td className="px-2 py-2 text-gray-700">{doc.notes || '-'}</td>
+                            <td className="px-2 py-2">{doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : '-'}</td>
+                            <td className="px-2 py-2">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className="text-blue-600 hover:underline"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await adminService.getDocumentUrl(doc.id);
+                                      const url = res?.url || res;
+                                      if (url) {
+                                        setDocViewerUrl(url);
+                                        setDocViewerTitle(doc.categoryName || doc.documentCategoryName || 'Document');
+                                        setShowDocViewer(true);
+                                      } else alert('Unable to fetch document URL');
+                                    } catch (err) {
+                                      console.error('Failed to get document url', err);
+                                      alert('Failed to open document');
+                                    }
+                                  }}
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
         </div>
       </div>
 
@@ -162,6 +231,21 @@ const UnifiedMemberAccount = ({ readOnly }) => {
               </p>
             </div>
           )}
+        </div>
+      )}
+      {/* Document Viewer Modal for Admin view */}
+      {showDocViewer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-60" onClick={() => setShowDocViewer(false)} />
+          <div className="bg-white rounded-lg shadow-lg z-10 w-11/12 md:w-3/4 lg:w-4/5 max-h-[90vh] overflow-auto p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">{docViewerTitle}</h3>
+              <button className="text-gray-600" onClick={() => setShowDocViewer(false)}>Close</button>
+            </div>
+            <div className="w-full h-[80vh]">
+              <iframe title={docViewerTitle} src={docViewerUrl} className="w-full h-full" />
+            </div>
+          </div>
         </div>
       )}
 

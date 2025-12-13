@@ -8,7 +8,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import {
   Home, User, LogOut, Users as UsersIcon, TrendingUp, TrendingDown,
-  Package, DollarSign, Calendar, Gift, Bell, Wallet
+  Package, DollarSign, Calendar, Gift, Bell
 } from 'lucide-react';
 import VdfNotifications from '../vdf/VdfNotifications';
 
@@ -148,12 +148,18 @@ const UpdatedNavbar = () => {
             <span className="text-xs text-white mt-1">{t('vdfBtn')}</span>
           </Link>
 
-          {/* Member-only: My Dashboard */}
-          {showMemberMenu && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-20 h-16 rounded bg-sky-600 hover:bg-sky-700 transition px-1" title={t('dashboard')}>
-              <Wallet size={22} />
-              <span className="text-xs text-white mt-1">{t('myAccBtn')}</span>
-            </Link>
+          {/* Member/Operator/Admin: My Dashboard quick access */}
+          {(showMemberMenu || showOperatorMenu || showAdminMenu) && (
+            (() => {
+              // Admins who are also members should be routed to their member dashboard (admin view)
+              const adminMemberId = isAdmin ? localStorage.getItem('memberId') : null;
+              const myAccHref = isAdmin ? (adminMemberId ? `/member/dashboard?memberId=${adminMemberId}` : '/admin/dashboard') : '/member/dashboard';
+              return (
+                <Link to={myAccHref} className="flex items-center justify-center w-20 h-16 rounded bg-sky-600 hover:bg-sky-700 transition px-1" title={t('dashboard')}>
+                  <span className="text-xs text-white">{t('myAccBtn')}</span>
+                </Link>
+              );
+            })()
           )}
 
           {/* Admin/Operator/Member: Gramin Bank button */}
@@ -189,12 +195,17 @@ const UpdatedNavbar = () => {
             <span className="text-[11px] text-white mt-1">{t('vdfBtn')}</span>
           </Link>
 
-          {/* Member-only: My Dashboard (mobile) */}
-          {showMemberMenu && (
-            <Link to="/member/dashboard" className="flex flex-col items-center justify-center w-18 h-12 rounded border border-white/20 bg-sky-600 hover:bg-sky-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('dashboard')}>
-              <Wallet size={18} />
-              <span className="text-[11px] text-white mt-1">{t('myAccBtn')}</span>
-            </Link>
+          {/* Member/Operator/Admin: My Dashboard (mobile) */}
+          {(showMemberMenu || showOperatorMenu || showAdminMenu) && (
+            (() => {
+              const adminMemberId = isAdmin ? localStorage.getItem('memberId') : null;
+              const myAccHref = isAdmin ? (adminMemberId ? `/member/dashboard?memberId=${adminMemberId}` : '/admin/dashboard') : '/member/dashboard';
+              return (
+                <Link to={myAccHref} className="flex items-center justify-center w-18 h-12 rounded border border-white/20 bg-sky-600 hover:bg-sky-700 transition px-1" onClick={() => setMobileMenuOpen(false)} aria-label={t('dashboard')}>
+                  <span className="text-[11px] text-white">{t('myAccBtn')}</span>
+                </Link>
+              );
+            })()
           )}
 
           {(showAdminMenu || showOperatorMenu) && (

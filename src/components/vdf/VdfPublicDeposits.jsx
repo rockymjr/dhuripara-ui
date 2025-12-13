@@ -203,6 +203,8 @@ const VdfPublicDeposits = () => {
     depositsByCategory[id] += d.amount;
   });
 
+  // Render deposits by category as a summary (visible to all users)
+
   const availableYearsOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   return (
@@ -235,11 +237,11 @@ const VdfPublicDeposits = () => {
 
       </div>
 
-      {/* Category-wise Summary Table 
+      {/* Deposits by Category Summary - visible to all users */}
       {Object.keys(depositsByCategory).length > 0 && (
         <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
           <div className="px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold">
-            Deposits by Category ({selectedYear === 'all' ? 'All Years' : selectedYear})
+            {t('depositsByCategory') || 'Deposits by Category'} ({selectedYear === 'all' ? 'All Years' : selectedYear})
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -254,10 +256,14 @@ const VdfPublicDeposits = () => {
                 {Object.entries(depositsByCategory)
                   .sort((a, b) => b[1] - a[1])
                   .map(([category, amount]) => {
-                    const percentage = totalDeposits > 0 ? ((amount / totalDeposits) * 100).toFixed(1) : 0;
+                    const percentage = totalDeposits > 0 ? ((amount / totalDeposits) * 100).toFixed(1) : '0.0';
+                    // show translated label if available in categoriesMap
+                    const idKey = category;
+                    const cat = categoriesMap.get(idKey) || { en: category, bn: category };
+                    const label = language === 'bn' ? (cat.bn || cat.en) : (cat.en || category);
                     return (
                       <tr key={category} className="hover:bg-gray-50 transition">
-                        <td className="px-4 py-3 font-medium text-gray-900">{category}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{label}</td>
                         <td className="px-4 py-3 text-right font-semibold text-green-600">{formatCurrency(amount, language)}</td>
                         <td className="px-4 py-3 text-right text-gray-600">{percentage}%</td>
                       </tr>
@@ -267,7 +273,7 @@ const VdfPublicDeposits = () => {
             </table>
           </div>
         </div>
-      )}*/}
+      )}
 
       {/* Category Filter and Deposits List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

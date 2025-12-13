@@ -20,6 +20,13 @@ const MemberManagement = () => {
   const [editingMember, setEditingMember] = useState(null);
   const [showDocumentUpload, setShowDocumentUpload] = useState(false);
   const [selectedMemberForDocument, setSelectedMemberForDocument] = useState(null);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [selectedMemberForInfo, setSelectedMemberForInfo] = useState(null);
+  const [memberInfoDocs, setMemberInfoDocs] = useState([]);
+  const [loadingInfoDocs, setLoadingInfoDocs] = useState(false);
+  const [showDocViewer, setShowDocViewer] = useState(false);
+  const [docViewerUrl, setDocViewerUrl] = useState('');
+  const [docViewerTitle, setDocViewerTitle] = useState('');
   const { isOperator } = useMemberAuth();
   const { isAuthenticated: isAdmin } = useAuth();
 
@@ -130,7 +137,7 @@ const MemberManagement = () => {
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition"
             >
               <Monitor size={20} />
-              <span>Active Sessions</span>
+              <span>Sessions</span>
             </Link>
           )}
           {!isOperator && (
@@ -183,6 +190,7 @@ const MemberManagement = () => {
           <>
             <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">{t('memberName')}</th>
             <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">{t('phone')}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Role</th>
             <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">{t('pin')}</th>
             <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">Login Status</th>
             {!isOperator && <th className="px-6 py-3 text-left text-sm font-semibold text-white uppercase tracking-wide">{t('status')}</th>}
@@ -203,6 +211,7 @@ const MemberManagement = () => {
                 </Link>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.phone}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{member.role || 'MEMBER'}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{member.pin || '-'}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 {member.isBlocked ? (
@@ -258,6 +267,32 @@ const MemberManagement = () => {
                       </button>
                     )}
                     <button
+                      onClick={() => {
+                        // open info modal
+                        (async () => {
+                          try {
+                            setShowInfoModal(true);
+                            setSelectedMemberForInfo(null);
+                            setMemberInfoDocs([]);
+                            const detail = await adminService.getMemberById(member.id);
+                            setSelectedMemberForInfo(detail);
+                            setLoadingInfoDocs(true);
+                            const docs = await adminService.getMemberDocuments(member.id);
+                            setMemberInfoDocs(docs || []);
+                          } catch (err) {
+                            console.error('Failed to fetch member info/docs', err);
+                            alert('Failed to load member info');
+                          } finally {
+                            setLoadingInfoDocs(false);
+                          }
+                        })();
+                      }}
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Info"
+                    >
+                      <Monitor size={18} />
+                    </button>
+                    <button
                       onClick={() => handleEdit(member)}
                       className="text-blue-600 hover:text-blue-900"
                       title="Edit"
@@ -296,12 +331,96 @@ const MemberManagement = () => {
           onClose={handleFormClose}
         />
       )}
+      {/* Document Viewer Modal */}
+      {showDocViewer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-60" onClick={() => setShowDocViewer(false)} />
+          <div className="bg-white rounded-lg shadow-lg z-10 w-11/12 md:w-3/4 lg:w-4/5 max-h-[90vh] overflow-auto p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">{docViewerTitle}</h3>
+              <button className="text-gray-600" onClick={() => setShowDocViewer(false)}>Close</button>
+            </div>
+            <div className="w-full h-[80vh]">
+              <iframe title={docViewerTitle} src={docViewerUrl} className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      )}
       {showDocumentUpload && selectedMemberForDocument && (
         <DocumentUpload
           memberId={selectedMemberForDocument.id}
           memberName={`${selectedMemberForDocument.firstName} ${selectedMemberForDocument.lastName}`}
           onClose={handleDocumentUploadClose}
         />
+      )}
+      {/* Info Modal */}
+      {showInfoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowInfoModal(false)} />
+          <div className="bg-white rounded-lg shadow-lg z-10 w-11/12 md:w-2/3 max-h-[80vh] overflow-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Member Info</h3>
+              <button className="text-gray-600" onClick={() => setShowInfoModal(false)}>Close</button>
+            </div>
+            {!selectedMemberForInfo ? (
+              <div>Loading...</div>
+            ) : (
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p><strong>Name:</strong> {selectedMemberForInfo.firstName} {selectedMemberForInfo.lastName}</p>
+                    <p><strong>Phone:</strong> {selectedMemberForInfo.phone}</p>
+                    <p><strong>Role:</strong> {selectedMemberForInfo.role}</p>
+                    <p><strong>PIN:</strong> {selectedMemberForInfo.pin || '-'}</p>
+                  </div>
+                  <div>
+                    <p><strong>Aadhar:</strong> {selectedMemberForInfo.aadharNo || '-'}</p>
+                    <p><strong>Voter:</strong> {selectedMemberForInfo.voterNo || '-'}</p>
+                    <p><strong>PAN:</strong> {selectedMemberForInfo.panNo || '-'}</p>
+                    <p><strong>Joining:</strong> {selectedMemberForInfo.joiningDate ? formatDate(selectedMemberForInfo.joiningDate) : '-'}</p>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <h4 className="font-semibold mb-2">Documents</h4>
+                  {loadingInfoDocs ? (
+                    <div>Loading...</div>
+                  ) : memberInfoDocs.length === 0 ? (
+                    <div className="text-gray-500">No documents</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {memberInfoDocs.map(doc => (
+                        <li key={doc.id} className="flex items-center justify-between border p-2 rounded">
+                          <div>
+                            <div className="font-medium">{doc.categoryName || doc.documentCategoryName || 'Document'}</div>
+                            <div className="text-sm text-gray-600">{doc.notes}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={async () => {
+                              try {
+                                const res = await adminService.getDocumentUrl(doc.id);
+                                const url = res?.url || res;
+                                if (url) {
+                                  setDocViewerUrl(url);
+                                  setDocViewerTitle(doc.categoryName || doc.documentCategoryName || 'Document');
+                                  setShowDocViewer(true);
+                                } else alert('Unable to fetch document URL');
+                              } catch (err) {
+                                console.error('Failed to fetch document url', err);
+                                alert('Failed to open document');
+                              }
+                            }} className="text-blue-600 hover:underline">View</button>
+                            <button onClick={async () => { try { await adminService.deleteDocument(doc.id); alert('Deleted'); const docs = await adminService.getMemberDocuments(selectedMemberForInfo.id); setMemberInfoDocs(docs || []); } catch (err) { console.error(err); alert('Failed to delete'); } }} className="text-red-600">Delete</button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
