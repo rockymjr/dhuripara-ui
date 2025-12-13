@@ -26,7 +26,6 @@ import VdfLanding from './components/vdf/VdfLanding';
 import MemberManagement from './components/admin/MemberManagement';
 import DepositManagement from './components/admin/DepositManagement';
 import LoanManagement from './components/admin/LoanManagement';
-import MemberStatement from './components/admin/MemberStatement';
 import YearlyReport from './components/admin/YearlyReport';
 import SessionManagement from './components/admin/SessionManagement';
 
@@ -36,7 +35,7 @@ import VdfExpenseManagement from './components/vdf/VdfExpenseManagement';
 import VdfDepositManagement from './components/vdf/VdfDepositManagement';
 
 // Member Pages
-import MemberDashboard from './components/member/MemberDashboard';
+import UnifiedMemberAccount from './components/member/UnifiedMemberAccount';
 import MemberAccount from './components/member/MemberAccount';
 import FamilyDetails from './components/member/FamilyDetails';
 import MyDocuments from './components/member/MyDocuments';
@@ -102,7 +101,7 @@ function RouterWrapper() {
         <Route path="/admin/members" element={isOperator ? <MemberManagement readOnly={true} /> : <ProtectedRoute><MemberManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/deposits" element={isOperator ? <DepositManagement readOnly={true} /> : <ProtectedRoute><DepositManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/loans" element={isOperator ? <LoanManagement readOnly={true} /> : <ProtectedRoute><LoanManagement readOnly={false} /></ProtectedRoute>} />
-        <Route path="/admin/statements" element={isOperator ? <MemberStatement readOnly={true} /> : <ProtectedRoute><MemberStatement readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/statements" element={isOperator ? <UnifiedMemberAccount readOnly={true} /> : <ProtectedRoute><UnifiedMemberAccount readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute><YearlyReport /></ProtectedRoute>} />
         <Route path="/admin/sessions" element={<ProtectedRoute><SessionManagement /></ProtectedRoute>} />
 
@@ -112,7 +111,7 @@ function RouterWrapper() {
         <Route path="/admin/vdf/expenses" element={<ProtectedRoute><VdfExpenseManagement /></ProtectedRoute>} />
 
         {/* Member */}
-        <Route path="/member/dashboard" element={<MemberProtectedRoute><MemberDashboard /></MemberProtectedRoute>} />
+        <Route path="/member/dashboard" element={<MemberProtectedRoute><UnifiedMemberAccount /></MemberProtectedRoute>} />
         <Route path="/member/account" element={<MemberProtectedRoute><MemberAccount /></MemberProtectedRoute>} />
         <Route path="/member/family" element={<MemberProtectedRoute><FamilyDetails /></MemberProtectedRoute>} />
         <Route path="/member/documents" element={<MemberProtectedRoute><MyDocuments /></MemberProtectedRoute>} />

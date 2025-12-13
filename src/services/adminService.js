@@ -167,5 +167,17 @@ export const adminService = {
   deleteDocument: async (documentId) => {
     const response = await api.delete(`/admin/documents/${documentId}`);
     return response.data;
+  },
+
+  downloadDocument: async (documentId) => {
+    const response = await api.get(`/admin/documents/${documentId}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  getDocumentUrl: async (documentId) => {
+    const response = await api.get(`/admin/documents/${documentId}/url`);
+    return response.data;
   }
 };

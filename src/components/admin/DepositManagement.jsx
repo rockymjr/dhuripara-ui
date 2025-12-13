@@ -10,7 +10,7 @@ import DepositForm from './DepositForm';
 import DepositReturn from './DepositReturn';
 import StyledTable from '../common/StyledTable';
 
-const DepositManagement = ({ readOnly }) => {
+const DepositManagement = ({ readOnly, statusFilter: externalStatusFilter, onFilterChange }) => {
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -18,8 +18,12 @@ const DepositManagement = ({ readOnly }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState(null);
   const [returningDeposit, setReturningDeposit] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('ACTIVE');
+  const [internalStatusFilter, setInternalStatusFilter] = useState('ACTIVE');
   const [sortedDeposits, setSortedDeposits] = useState([]);
+
+  // Use external filter if provided, otherwise use internal state
+  const statusFilter = externalStatusFilter !== undefined ? externalStatusFilter : internalStatusFilter;
+  const setStatusFilter = onFilterChange || setInternalStatusFilter;
 
   useEffect(() => {
     fetchDeposits();
@@ -89,49 +93,51 @@ const DepositManagement = ({ readOnly }) => {
           )}
         </div>
 
-        {/* Status Filter */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="flex space-x-2">
-              <button
-                onClick={() => {
-                  setStatusFilter('ALL');
-                  setPage(0);
-                }}
-                className={`px-4 py-2 rounded-lg transition ${statusFilter === 'ALL'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                {t('allDeposits') || 'All Deposits'}
-              </button>
-              <button
-                onClick={() => {
-                  setStatusFilter('ACTIVE');
-                  setPage(0);
-                }}
-                className={`px-4 py-2 rounded-lg transition ${statusFilter === 'ACTIVE'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                {t('active') || 'Active'}            
-              </button>
-              <button
-                onClick={() => {
-                  setStatusFilter('RETURNED');
-                  setPage(0);
-                }}
-                className={`px-4 py-2 rounded-lg transition ${statusFilter === 'RETURNED'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                {t('closed') || 'Returned'}
-              </button>
+        {/* Status Filter - only show if not controlled externally */}
+        {externalStatusFilter === undefined && (
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    setStatusFilter('ALL');
+                    setPage(0);
+                  }}
+                  className={`px-4 py-2 rounded-lg transition ${statusFilter === 'ALL'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {t('allDeposits') || 'All Deposits'}
+                </button>
+                <button
+                  onClick={() => {
+                    setStatusFilter('ACTIVE');
+                    setPage(0);
+                  }}
+                  className={`px-4 py-2 rounded-lg transition ${statusFilter === 'ACTIVE'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {t('active') || 'Active'}            
+                </button>
+                <button
+                  onClick={() => {
+                    setStatusFilter('RETURNED');
+                    setPage(0);
+                  }}
+                  className={`px-4 py-2 rounded-lg transition ${statusFilter === 'RETURNED'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {t('closed') || 'Returned'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <StyledTable
           renderHeader={() => (

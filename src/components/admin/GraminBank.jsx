@@ -4,7 +4,7 @@ import { memberService } from '../../services/memberService';
 import { useLanguage } from '../../context/LanguageContext';
 import LoanManagement from './LoanManagement';
 import DepositManagement from './DepositManagement';
-import MemberDashboard from '../member/MemberDashboard';
+import UnifiedMemberAccount from '../member/UnifiedMemberAccount';
 
 const sections = [
     { key: 'loans', label: 'Loans' },
@@ -18,10 +18,17 @@ const loanFilters = [
     { key: 'ALL', label: 'All' }
 ];
 
+const depositFilters = [
+    { key: 'ACTIVE', label: 'Active' },
+    { key: 'RETURNED', label: 'Returned' },
+    { key: 'ALL', label: 'All' }
+];
+
 const GraminBank = () => {
     const { t } = useLanguage();
     const [selectedSection, setSelectedSection] = useState('loans');
     const [selectedLoanFilter, setSelectedLoanFilter] = useState('ACTIVE');
+    const [selectedDepositFilter, setSelectedDepositFilter] = useState('ACTIVE');
     const { isOperator, isAuthenticated: isMember } = useMemberAuth() || {};
     const [hasBankActivity, setHasBankActivity] = useState(false);
 
@@ -50,9 +57,9 @@ const GraminBank = () => {
             case 'loans':
                 return <LoanManagement readOnly={readOnly} statusFilter={selectedLoanFilter} onFilterChange={setSelectedLoanFilter} />;
             case 'deposits':
-                return <DepositManagement readOnly={readOnly} />;
+                return <DepositManagement readOnly={readOnly} statusFilter={selectedDepositFilter} onFilterChange={setSelectedDepositFilter} />;
             case 'account':
-                return <MemberDashboard />;
+                return <UnifiedMemberAccount readOnly={readOnly} />;
             default:
                 return null;
         }
@@ -87,6 +94,20 @@ const GraminBank = () => {
                             className="px-3 py-2 rounded border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
                             {loanFilters.map(filter => (
+                                <option key={filter.key} value={filter.key}>{filter.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                {selectedSection === 'deposits' && (
+                    <div className="ml-auto flex items-center gap-2">
+                        <label className="text-sm text-gray-700">Filter:</label>
+                        <select
+                            value={selectedDepositFilter}
+                            onChange={(e) => setSelectedDepositFilter(e.target.value)}
+                            className="px-3 py-2 rounded border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                            {depositFilters.map(filter => (
                                 <option key={filter.key} value={filter.key}>{filter.label}</option>
                             ))}
                         </select>
