@@ -162,7 +162,7 @@ const DepositManagement = ({ readOnly, statusFilter: externalStatusFilter, onFil
           ) : (
             deposits.map((deposit) => (
               <tr key={deposit.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><Link to={`/admin/statements?memberId=${deposit.memberId}`} className="text-blue-600 hover:underline">{deposit.memberName}</Link></td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><Link to={`/admin/dashboard?memberId=${deposit.memberId}`} className="text-blue-600 hover:underline">{deposit.memberName}</Link></td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(deposit.amount)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(deposit.depositDate)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{deposit.returnDate ? formatDate(deposit.returnDate) : '-'}</td>

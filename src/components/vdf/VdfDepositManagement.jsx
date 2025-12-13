@@ -172,7 +172,7 @@ const VdfDepositManagement = () => {
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-xs md:text-sm">{deposit.sourceName}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Member: {deposit.member ? `${deposit.member.firstName || ''} ${deposit.member.lastName || ''}`.trim() : 'N/A'}</p>
+                  {/* Member hidden per request */}
                   <p className="text-xs text-gray-500 mt-0.5">{formatDate(deposit.depositDate)}</p>
                 </div>
                 <span className="px-1.5 py-0.5 text-xs font-semibold rounded bg-green-100 text-green-800 whitespace-nowrap ml-2">
@@ -215,7 +215,6 @@ const VdfDepositManagement = () => {
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold">Date</th>
                   <th className="px-3 py-2 text-left font-semibold">Type</th>
-                  <th className="px-3 py-2 text-left font-semibold">Member</th>
                   <th className="px-3 py-2 text-left font-semibold">Source</th>
                   <th className="px-3 py-2 text-right font-semibold">Amount</th>
                   <th className="px-3 py-2 text-center font-semibold">Actions</th>
@@ -224,8 +223,8 @@ const VdfDepositManagement = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredDeposits.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-3 py-4 text-center text-gray-500">{t('noDepositsFound')}</td>
-                  </tr>
+                        <td colSpan="5" className="px-3 py-4 text-center text-gray-500">{t('noDepositsFound')}</td>
+                      </tr>
                 ) : (
                   filteredDeposits.map((deposit) => (
                     <tr key={deposit.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100 group">
@@ -237,9 +236,7 @@ const VdfDepositManagement = () => {
                           {deposit.categoryName || deposit.category?.categoryName || '-'}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-900">
-                        {deposit.member ? `${deposit.member.firstName || ''} ${deposit.member.lastName || ''}`.trim() : '-'}
-                      </td>
+                      {/* Member column hidden */}
                       <td className="px-3 py-3 text-sm text-gray-900">
                         {deposit.sourceName || '-'}
                       </td>

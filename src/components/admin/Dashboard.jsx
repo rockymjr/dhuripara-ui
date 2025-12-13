@@ -1,8 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import UnifiedMemberAccount from '../member/UnifiedMemberAccount';
 import { Users, TrendingUp, TrendingDown, FileText, Calendar } from 'lucide-react';
 
 const Dashboard = () => {
+  const [searchParams] = useSearchParams();
+  const memberId = searchParams.get('memberId');
   const menuItems = [
     {
       title: 'Member Management',
@@ -29,8 +32,15 @@ const Dashboard = () => {
       title: 'Member Statements',
       description: 'View member transaction history',
       icon: FileText,
-      link: '/admin/statements',
+      link: '/admin/dashboard',
       color: 'bg-purple-500'
+    },
+    {
+      title: 'Families',
+      description: 'Manage VDF families',
+      icon: Users,
+      link: '/admin/vdf/families',
+      color: 'bg-green-500'
     },
     {
       title: 'Yearly Reports',
@@ -48,30 +58,35 @@ const Dashboard = () => {
         <p className="text-gray-600 mt-2">Manage your village fund system</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {menuItems.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={index}
-              to={item.link}
-              className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-transparent hover:border-green-500"
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`${item.color} p-3 rounded-lg text-white`}>
-                  <Icon size={24} />
+      {memberId ? (
+        // If a memberId query param is present, show the UnifiedMemberAccount (admin view).
+        <UnifiedMemberAccount />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {menuItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={index}
+                to={item.link}
+                className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow p-6 border-t-4 border-transparent hover:border-green-500"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className={`${item.color} p-3 rounded-lg text-white`}>
+                    <Icon size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm">{item.description}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">{item.description}</p>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

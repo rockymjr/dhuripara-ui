@@ -175,7 +175,7 @@ const LoanManagement = ({ readOnly, statusFilter: externalStatusFilter, onFilter
         ) : (
           loans.map((loan) => (
             <tr key={loan.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><Link to={`/admin/statements?memberId=${loan.memberId}`} className="text-blue-600 hover:underline">{loan.memberName}</Link></td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><Link to={`/admin/dashboard?memberId=${loan.memberId}`} className="text-blue-600 hover:underline">{loan.memberName}</Link></td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(loan.loanAmount)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm"><div className="text-green-600 font-medium">{formatCurrency(loan.paidAmount || 0)}</div>{loan.discountAmount > 0 && (<div className="text-orange-600 text-xs">-{formatCurrency(loan.discountAmount)}</div>)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(loan.loanDate)}</td>

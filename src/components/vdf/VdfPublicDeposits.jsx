@@ -342,7 +342,6 @@ const VdfPublicDeposits = () => {
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Date</th>
                 <th className="px-4 py-3 text-left font-semibold">Category</th>
-                <th className="px-4 py-3 text-left font-semibold">Member</th>
                 <th className="px-4 py-3 text-left font-semibold">Source</th>
                 <th className="px-4 py-3 text-right font-semibold">Amount</th>
                 {isAdmin && <th className="px-4 py-3 text-center font-semibold">Actions</th>}
@@ -351,7 +350,7 @@ const VdfPublicDeposits = () => {
             <tbody className="divide-y divide-gray-200">
               {filteredDeposits.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-4 text-center text-gray-500">
+                  <td colSpan={isAdmin ? 5 : 4} className="px-4 py-4 text-center text-gray-500">
                     {t('noDepositsFound')}
                   </td>
                 </tr>
@@ -368,9 +367,6 @@ const VdfPublicDeposits = () => {
                           : (deposit.categoryName || deposit.category?.categoryName || '-')
                         }
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700 text-xs sm:text-sm">
-                      {deposit.member ? getMemberDisplayName(deposit.member) : '-'}
                     </td>
                     <td className="px-4 py-3 text-gray-700 truncate max-w-xs text-xs sm:text-sm">
                       {language === 'bn' ? (deposit.sourceNameBn || deposit.sourceName || '-') : (deposit.sourceName || '-')}

@@ -198,7 +198,7 @@ const MemberManagement = () => {
           members.map((member) => (
             <tr key={member.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                <Link to={`/admin/statements?memberId=${member.id}`} className="text-blue-600 hover:underline">
+                <Link to={`/admin/dashboard?memberId=${member.id}`} className="text-blue-600 hover:underline">
                   {member.firstName} {member.lastName}
                 </Link>
               </td>

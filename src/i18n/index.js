@@ -35,8 +35,9 @@ const translations = {
     day: 'Day',
     
     // VDF Module
-    vdf: 'Village Development Fund',
-    vdfLanding: 'Village Development Fund',
+    vdf: 'Village Development',
+    vdfButton: 'Village',
+    vdfLanding: 'Village Development',
     vdfFamilyManagement: 'Families',
     vdfDeposits: 'Deposits',
     vdfExpenses: 'Expenses',
@@ -413,6 +414,7 @@ const translations = {
     
     // VDF Module
     vdf: 'গ্রাম উন্নয়ন',
+    vdfButton: 'গ্রাম',
     vdfLanding: 'গ্রাম উন্নয়ন',
     vdfFamilyManagement: 'পরিবার',
     vdfDeposits: 'জমা',

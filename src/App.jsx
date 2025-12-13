@@ -1,6 +1,6 @@
 // src/App.jsx - RouterProvider with future flags to silence react-router warnings
 import React, { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { MemberAuthProvider, useMemberAuth } from './context/MemberAuthContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -28,6 +28,7 @@ import DepositManagement from './components/admin/DepositManagement';
 import LoanManagement from './components/admin/LoanManagement';
 import YearlyReport from './components/admin/YearlyReport';
 import SessionManagement from './components/admin/SessionManagement';
+import Dashboard from './components/admin/Dashboard';
 
 // VDF Admin Pages
 import VdfFamilyManagement from './components/admin/vdf/VdfFamilyManagement';
@@ -73,6 +74,16 @@ function RouterWrapper() {
     );
   }
 
+  function RedirectAdminStatements() {
+    const location = useLocation();
+    return <Navigate to={`/admin/dashboard${location.search}`} replace />;
+  }
+
+  function RedirectMemberSection({ section }) {
+    const location = useLocation();
+    return <Navigate to={`/member/dashboard?section=${section}${location.search}`} replace />;
+  }
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
@@ -96,12 +107,12 @@ function RouterWrapper() {
           isOperator ? <GraminBank /> : 
           <ProtectedRoute><GraminBank /></ProtectedRoute>
         } />
-        <Route path="/member/bank" element={<MemberProtectedRoute><GraminBank /></MemberProtectedRoute>} />
-        <Route path="/admin/dashboard" element={<Navigate to="/admin/members" replace />} />
+        <Route path="/member/bank" element={<MemberProtectedRoute><RedirectMemberSection section="bank" /></MemberProtectedRoute>} />
+        <Route path="/admin/dashboard" element={isOperator ? <Dashboard /> : <ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/admin/members" element={isOperator ? <MemberManagement readOnly={true} /> : <ProtectedRoute><MemberManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/deposits" element={isOperator ? <DepositManagement readOnly={true} /> : <ProtectedRoute><DepositManagement readOnly={false} /></ProtectedRoute>} />
         <Route path="/admin/loans" element={isOperator ? <LoanManagement readOnly={true} /> : <ProtectedRoute><LoanManagement readOnly={false} /></ProtectedRoute>} />
-        <Route path="/admin/statements" element={isOperator ? <UnifiedMemberAccount readOnly={true} /> : <ProtectedRoute><UnifiedMemberAccount readOnly={false} /></ProtectedRoute>} />
+        <Route path="/admin/statements" element={isOperator ? <RedirectAdminStatements /> : <ProtectedRoute><RedirectAdminStatements /></ProtectedRoute>} />
         <Route path="/admin/reports" element={<ProtectedRoute><YearlyReport /></ProtectedRoute>} />
         <Route path="/admin/sessions" element={<ProtectedRoute><SessionManagement /></ProtectedRoute>} />
 
@@ -112,10 +123,10 @@ function RouterWrapper() {
 
         {/* Member */}
         <Route path="/member/dashboard" element={<MemberProtectedRoute><UnifiedMemberAccount /></MemberProtectedRoute>} />
-        <Route path="/member/account" element={<MemberProtectedRoute><MemberAccount /></MemberProtectedRoute>} />
-        <Route path="/member/family" element={<MemberProtectedRoute><FamilyDetails /></MemberProtectedRoute>} />
-        <Route path="/member/documents" element={<MemberProtectedRoute><MyDocuments /></MemberProtectedRoute>} />
-        <Route path="/member/family-documents" element={<MemberProtectedRoute><FamilyDocuments /></MemberProtectedRoute>} />
+        <Route path="/member/account" element={<MemberProtectedRoute><RedirectMemberSection section="account" /></MemberProtectedRoute>} />
+        <Route path="/member/family" element={<MemberProtectedRoute><RedirectMemberSection section="family-documents" /></MemberProtectedRoute>} />
+        <Route path="/member/documents" element={<MemberProtectedRoute><RedirectMemberSection section="documents" /></MemberProtectedRoute>} />
+        <Route path="/member/family-documents" element={<MemberProtectedRoute><RedirectMemberSection section="family-documents" /></MemberProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

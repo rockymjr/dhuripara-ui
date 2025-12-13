@@ -19,8 +19,7 @@ const VdfLanding = () => {
     { key: 'myVdf', label: t('myVdf') || 'My VDF', memberOnly: true },
     { key: 'expenses', label: t('vdfExpenses') },
     { key: 'deposits', label: t('vdfDeposits') },
-    { key: 'monthly', label: t('Monthly') },
-    { key: 'families', label: t('vdfFamilyManagement'), adminOnly: true }
+    { key: 'monthly', label: t('Monthly') }
   ];
 
   const showFamilies = isAdmin || (isMember && isOperator);

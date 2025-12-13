@@ -8,7 +8,7 @@ const OperatorDashboard = () => {
       title: 'Member Statements',
       description: 'View member transaction history',
       icon: FileText,
-      link: '/admin/statements',
+      link: '/admin/dashboard',
       color: 'bg-purple-500'
     },
     {

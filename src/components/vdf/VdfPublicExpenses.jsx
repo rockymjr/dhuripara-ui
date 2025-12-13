@@ -6,7 +6,7 @@ import { formatDate } from '../../utils/dateFormatter';
 import { useLanguage } from '../../context/LanguageContext';
 import Loader from '../common/Loader';
 import VdfExpenseForm from './VdfExpenseForm';
-import { Package, Plus, Edit, Trash2, Info } from 'lucide-react';
+import { Package, Plus, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const VdfPublicExpenses = () => {
@@ -17,8 +17,9 @@ const VdfPublicExpenses = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedNotes, setSelectedNotes] = useState(null);
+  // Notes hidden: selectedNotes removed
 
   useEffect(() => {
     fetchExpenses();
@@ -77,7 +78,11 @@ const VdfPublicExpenses = () => {
 
   if (loading) return <Loader message={t('loadingExpenses')} />;
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const filteredExpenses = (selectedCategory && selectedCategory !== 'all')
+    ? expenses.filter(e => String(e.categoryId || (e.category && e.category.id) || '') === String(selectedCategory))
+    : expenses;
+
+  const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   
   // Calculate expenses by category
   const expensesByCategory = {};
@@ -107,6 +112,16 @@ const VdfPublicExpenses = () => {
           >
             {availableYears.map(year => (
               <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+          >
+            <option value="all">{t('allCategories') || 'All Categories'}</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{language === 'bn' ? (cat.categoryNameBn || cat.categoryName) : (cat.categoryName || cat.categoryNameBn)}</option>
             ))}
           </select>
           {isAdmin && (
@@ -166,7 +181,7 @@ const VdfPublicExpenses = () => {
                 <th className="px-3 py-2 text-left font-semibold">Category</th>
                 <th className="px-3 py-2 text-left font-semibold">Description</th>
                 <th className="px-3 py-2 text-right font-semibold">Amount</th>
-                <th className="px-3 py-2 text-center font-semibold">Notes</th>
+                {/* Notes column hidden */}
                 {isAdmin && <th className="px-3 py-2 text-center font-semibold">Actions</th>}
               </tr>
             </thead>
@@ -178,7 +193,7 @@ const VdfPublicExpenses = () => {
                   </td>
                 </tr>
               ) : (
-                expenses.map((expense) => (
+                filteredExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2 text-gray-700 whitespace-nowrap text-xs sm:text-sm">{formatDate(expense.expenseDate)}</td>
                     <td className="px-3 py-2">
@@ -192,19 +207,7 @@ const VdfPublicExpenses = () => {
                     <td className="px-3 py-2 text-right font-semibold text-orange-600 whitespace-nowrap text-xs sm:text-sm">
                       {formatCurrency(expense.amount)}
                     </td>
-                    <td className="px-3 py-2 text-center">
-                      {expense.notes ? (
-                        <button
-                          onClick={() => setSelectedNotes(expense.notes)}
-                          className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition"
-                          title="View notes"
-                        >
-                          <Info size={16} />
-                        </button>
-                      ) : (
-                        <span className="text-gray-300">-</span>
-                      )}
-                    </td>
+                    {/* notes hidden */}
                     {isAdmin && (
                       <td className="px-3 py-2 text-center">
                         <div className="flex items-center justify-center gap-1">
@@ -234,20 +237,7 @@ const VdfPublicExpenses = () => {
       </div>
 
       {/* Notes Modal */}
-      {selectedNotes && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Notes</h3>
-            <p className="text-gray-700 mb-6 whitespace-pre-wrap break-words">{selectedNotes}</p>
-            <button
-              onClick={() => setSelectedNotes(null)}
-              className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Notes removed from public expenses view */}
 
       {/* Expense Form Modal */}
       {showForm && (
