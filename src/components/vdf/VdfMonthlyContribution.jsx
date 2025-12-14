@@ -1,5 +1,5 @@
 // src/components/vdf/VdfMonthlyContribution.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { vdfService } from '../../services/vdfService';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useLanguage } from '../../context/LanguageContext';
@@ -13,6 +13,7 @@ const VdfMonthlyContribution = () => {
   const { isAuthenticated: isAdmin } = useAuth();
   const [matrix, setMatrix] = useState(null);
   const [loading, setLoading] = useState(true);
+  const cacheRef = useRef({}); // cache monthly matrices by year
   
   const MONTHS = [
     t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'),
@@ -23,10 +24,19 @@ const VdfMonthlyContribution = () => {
   const [editingFamily, setEditingFamily] = useState(null);
   const [expandedFamily, setExpandedFamily] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
 
   useEffect(() => {
     fetchMatrix();
   }, [selectedYear]);
+
+  // Debounce search term to avoid frequent re-renders
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm.trim().toLowerCase()), 300);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
   const handleFormClose = (shouldRefresh) => {
     setShowForm(false);
@@ -48,12 +58,18 @@ const VdfMonthlyContribution = () => {
   const fetchMatrix = async () => {
     try {
       setLoading(true);
-      console.log('Fetching monthly matrix for year:', selectedYear);
+      // Return cached data immediately (stale-while-revalidate)
+      const cached = cacheRef.current[selectedYear];
+      if (cached) {
+        setMatrix(cached);
+        // continue to refresh in background
+      }
+
       const data = await vdfService.getPublicMonthlyMatrix(selectedYear);
-      console.log('Monthly matrix data:', data);
-      // Handle both array and object responses
       const families = Array.isArray(data) ? data : (data?.families || []);
-      setMatrix({ families });
+      const payload = { families };
+      cacheRef.current[selectedYear] = payload;
+      setMatrix(payload);
     } catch (error) {
       console.error('Error fetching contribution matrix:', error);
       alert(t('errorFetching'));
@@ -65,13 +81,26 @@ const VdfMonthlyContribution = () => {
   // Memoize filtered families to avoid recalculating on every render
   const filteredFamilies = useMemo(() => {
     if (!matrix?.families) return [];
-    if (!searchTerm) return matrix.families;
-    const search = searchTerm.toLowerCase();
+    if (!debouncedSearch) return matrix.families;
     return matrix.families.filter(family => {
       const display = (family.memberName || family.familyHeadName || '').toLowerCase();
-      return display.includes(search);
+      return display.includes(debouncedSearch);
     });
-  }, [matrix?.families, searchTerm]);
+  }, [matrix?.families, debouncedSearch]);
+
+  // Pagination: only render the current page slice
+  const totalFamilies = filteredFamilies.length;
+  const pageCount = Math.max(1, Math.ceil(totalFamilies / PAGE_SIZE));
+  const paginatedFamilies = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredFamilies.slice(start, start + PAGE_SIZE);
+  }, [filteredFamilies, page]);
+
+  // Reset page when filtered list changes
+  useEffect(() => setPage(1), [debouncedSearch, selectedYear]);
+
+  // Collapse expanded details when page changes
+  useEffect(() => setExpandedFamily(null), [page]);
 
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
@@ -144,37 +173,31 @@ const VdfMonthlyContribution = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-lg shadow p-4 text-white">
           <h3 className="text-sm font-medium opacity-90">{t('totalFamilies')}</h3>
-          <p className="text-3xl font-bold mt-2">{filteredFamilies.length}</p>
+          <p className="text-3xl font-bold mt-2">{totalFamilies}</p>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-4 text-white">
           <h3 className="text-sm font-medium opacity-90">{t('totalPaid')} (All-time)</h3>
           <p className="text-2xl font-bold mt-2">
-            {formatCurrency(
-              filteredFamilies.reduce((sum, f) => sum + (f.totalPaidAllTime || 0), 0)
-            )}
+            {formatCurrency(filteredFamilies.reduce((sum, f) => sum + (f.totalPaidAllTime || 0), 0))}
           </p>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-4 text-white">
           <h3 className="text-sm font-medium opacity-90">{t('totalDues')}</h3>
           <p className="text-2xl font-bold mt-2">
-            {formatCurrency(
-              filteredFamilies.reduce((sum, f) => sum + (f.totalDueAllTime || 0), 0)
-            )}
+            {formatCurrency(filteredFamilies.reduce((sum, f) => sum + (f.totalDueAllTime || 0), 0))}
           </p>
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-4 text-white">
           <h3 className="text-sm font-medium opacity-90">{selectedYear} {t('totalPaid')}</h3>
           <p className="text-2xl font-bold mt-2">
-            {formatCurrency(
-              filteredFamilies.reduce((sum, f) => sum + (f.totalPaid || 0), 0)
-            )}
+            {formatCurrency(filteredFamilies.reduce((sum, f) => sum + (f.totalPaid || 0), 0))}
           </p>
         </div>
       </div>
 
       {/* Family List with Collapsible Months - Table Format */}
       <div className="space-y-2">
-        {filteredFamilies.map((family) => (
+        {paginatedFamilies.map((family) => (
           <div key={family.familyConfigId} className="bg-white rounded-lg shadow overflow-hidden">
             {/* Family Header - Table Row Format */}
             <div 
@@ -310,6 +333,18 @@ const VdfMonthlyContribution = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalFamilies > PAGE_SIZE && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-sm text-gray-600">Showing {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, totalFamilies)} of {totalFamilies}</div>
+          <div className="flex items-center space-x-2">
+            <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1 rounded border bg-white text-sm">Prev</button>
+            <span className="text-sm text-gray-700">Page {page} / {pageCount}</span>
+            <button disabled={page === pageCount} onClick={() => setPage(p => Math.min(pageCount, p + 1))} className="px-3 py-1 rounded border bg-white text-sm">Next</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
